@@ -8,10 +8,9 @@
 // Test fixture for trailer field manipulation
 class TrailerFieldTest : public ::testing::Test {
 protected:
-    using PacketType = vrtio::signal_packet<
+    using PacketType = vrtio::SignalPacket<
         vrtio::packet_type::signal_data_with_stream,
-        vrtio::tsi_type::utc,
-        vrtio::tsf_type::none,
+        vrtio::TimeStampUTC,
         true,   // HasTrailer
         128
     >;
@@ -258,7 +257,7 @@ TEST_F(TrailerFieldTest, BitIndependence) {
 
 // Test builder pattern with individual fields
 TEST_F(TrailerFieldTest, BuilderIndividualFields) {
-    auto packet = vrtio::packet_builder<PacketType>(buffer.data())
+    auto packet = vrtio::PacketBuilder<PacketType>(buffer.data())
         .stream_id(0x12345678)
         .timestamp_integer(1000000)
         .trailer_valid_data(true)
@@ -274,7 +273,7 @@ TEST_F(TrailerFieldTest, BuilderIndividualFields) {
 }
 
 TEST_F(TrailerFieldTest, BuilderGoodStatus) {
-    auto packet = vrtio::packet_builder<PacketType>(buffer.data())
+    auto packet = vrtio::PacketBuilder<PacketType>(buffer.data())
         .stream_id(0x11111111)
         .trailer_good_status()
         .build();
@@ -285,7 +284,7 @@ TEST_F(TrailerFieldTest, BuilderGoodStatus) {
 }
 
 TEST_F(TrailerFieldTest, BuilderStatusMethod) {
-    auto packet = vrtio::packet_builder<PacketType>(buffer.data())
+    auto packet = vrtio::PacketBuilder<PacketType>(buffer.data())
         .stream_id(0x22222222)
         .trailer_status(true, true, false, false)
         .build();
@@ -297,7 +296,7 @@ TEST_F(TrailerFieldTest, BuilderStatusMethod) {
 }
 
 TEST_F(TrailerFieldTest, BuilderWithErrors) {
-    auto packet = vrtio::packet_builder<PacketType>(buffer.data())
+    auto packet = vrtio::PacketBuilder<PacketType>(buffer.data())
         .stream_id(0x33333333)
         .trailer_status(true, true, true, true)
         .build();
@@ -310,7 +309,7 @@ TEST_F(TrailerFieldTest, BuilderWithErrors) {
 }
 
 TEST_F(TrailerFieldTest, BuilderContextPackets) {
-    auto packet = vrtio::packet_builder<PacketType>(buffer.data())
+    auto packet = vrtio::PacketBuilder<PacketType>(buffer.data())
         .stream_id(0x44444444)
         .trailer_context_packets(10)
         .trailer_valid_data(true)
@@ -321,7 +320,7 @@ TEST_F(TrailerFieldTest, BuilderContextPackets) {
 }
 
 TEST_F(TrailerFieldTest, BuilderReferenceLock) {
-    auto packet = vrtio::packet_builder<PacketType>(buffer.data())
+    auto packet = vrtio::PacketBuilder<PacketType>(buffer.data())
         .stream_id(0x55555555)
         .trailer_reference_lock(true)
         .trailer_valid_data(true)
@@ -479,7 +478,7 @@ TEST_F(TrailerFieldTest, AllBitsSet) {
 // Test roundtrip through serialization
 TEST_F(TrailerFieldTest, SerializationRoundtrip) {
     // Create and configure packet
-    [[maybe_unused]] auto packet1 = vrtio::packet_builder<PacketType>(buffer.data())
+    [[maybe_unused]] auto packet1 = vrtio::PacketBuilder<PacketType>(buffer.data())
         .stream_id(0xABCDEF00)
         .timestamp_integer(999999)
         .trailer_valid_data(true)

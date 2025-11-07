@@ -4,6 +4,8 @@
 #include "../core/endian.hpp"
 #include "../core/concepts.hpp"
 #include "../core/trailer.hpp"
+#include "../core/timestamp.hpp"
+#include "../core/timestamp_traits.hpp"
 #include <cstring>
 #include <cstdio>
 #include <span>
@@ -13,16 +15,24 @@ namespace vrtio {
 
 template<
     packet_type Type,
-    tsi_type TSI = tsi_type::none,
-    tsf_type TSF = tsf_type::none,
+    typename TimeStampType = NoTimeStamp,
     bool HasTrailer = false,
     size_t PayloadWords = 0
 >
     requires (Type == packet_type::signal_data_no_stream ||
               Type == packet_type::signal_data_with_stream) &&
-             ValidPayloadWords<PayloadWords>
-class signal_packet {
+             ValidPayloadWords<PayloadWords> &&
+             ValidTimestampType<TimeStampType>
+class SignalPacket {
+private:
+    // Extract TSI and TSF from TimeStampType
+    static constexpr tsi_type TSI = TimestampTraits<TimeStampType>::tsi;
+    static constexpr tsf_type TSF = TimestampTraits<TimeStampType>::tsf;
+
 public:
+    // Timestamp type alias
+    using timestamp_type = TimeStampType;
+
     // Compile-time packet configuration
     static constexpr packet_type packet_type_v = Type;
     static constexpr tsi_type tsi_type_v = TSI;
@@ -32,6 +42,7 @@ public:
 
     // Derived constants
     static constexpr bool has_stream_id = (Type == packet_type::signal_data_with_stream);
+    static constexpr bool has_timestamp = TimestampTraits<TimeStampType>::has_timestamp;
 
     // Size calculation (in 32-bit words)
     static constexpr size_t header_words = 1;
@@ -78,7 +89,7 @@ public:
     //
     // Phase 2 Enhancement: This API will be replaced with type-safe factory
     // methods that enforce validation at compile time. See design/phase1_v1.4.md
-    explicit signal_packet(uint8_t* buffer, bool init = true) noexcept
+    explicit SignalPacket(uint8_t* buffer, bool init = true) noexcept
         : buffer_(buffer) {
         if (init) {
             init_header();
@@ -86,12 +97,12 @@ public:
     }
 
     // Prevent copying (packet is a view)
-    signal_packet(const signal_packet&) = delete;
-    signal_packet& operator=(const signal_packet&) = delete;
+    SignalPacket(const SignalPacket&) = delete;
+    SignalPacket& operator=(const SignalPacket&) = delete;
 
     // Allow moving
-    signal_packet(signal_packet&&) noexcept = default;
-    signal_packet& operator=(signal_packet&&) noexcept = default;
+    SignalPacket(SignalPacket&&) noexcept = default;
+    SignalPacket& operator=(SignalPacket&&) noexcept = default;
 
     // Header field accessors (always available)
 
@@ -135,7 +146,7 @@ public:
         write_u32(stream_id_offset, id);
     }
 
-    // Integer timestamp accessors (only if TSI != none)
+    // Integer timestamp accessors (only if TSI != none).  Prefer getTimeStamp()/setTimeStamp().
 
     uint32_t timestamp_integer() const noexcept requires(TSI != tsi_type::none) {
         return read_u32(tsi_offset);
@@ -145,7 +156,7 @@ public:
         write_u32(tsi_offset, ts);
     }
 
-    // Fractional timestamp accessors (only if TSF != none)
+    // Fractional timestamp accessors (only if TSF != none) Prefer getTimeStamp()/setTimeStamp().
 
     uint64_t timestamp_fractional() const noexcept requires(TSF != tsf_type::none) {
         return read_u64(tsf_offset);
@@ -153,6 +164,32 @@ public:
 
     void set_timestamp_fractional(uint64_t ts) noexcept requires(TSF != tsf_type::none) {
         write_u64(tsf_offset, ts);
+    }
+
+    // Unified TimeStamp accessors
+
+    /**
+     * Get timestamp as the packet's TimeStampType.
+     * Only available when packet has a timestamp type (not NoTimeStamp).
+     * @return TimeStampType object containing both integer and fractional parts
+     */
+    TimeStampType getTimeStamp() const noexcept
+        requires(HasTimestamp<TimeStampType>) {
+        return TimeStampType::fromComponents(
+            timestamp_integer(),
+            timestamp_fractional()
+        );
+    }
+
+    /**
+     * Set timestamp from the packet's TimeStampType.
+     * Only available when packet has a timestamp type (not NoTimeStamp).
+     * @param ts TimeStampType object to set
+     */
+    void setTimeStamp(const TimeStampType& ts) noexcept
+        requires(HasTimestamp<TimeStampType>) {
+        set_timestamp_integer(ts.seconds());
+        set_timestamp_fractional(ts.fractional());
     }
 
     // Trailer accessors (only if HasTrailer)
@@ -523,27 +560,5 @@ private:
         std::memcpy(buffer_ + word_offset * vrt_word_size, &value, sizeof(value));
     }
 };
-
-// Type alias for common packet configurations
-
-// Type 0: Signal data without stream ID
-template<tsi_type TSI = tsi_type::none,
-         tsf_type TSF = tsf_type::none,
-         bool HasTrailer = false,
-         size_t PayloadWords = 256>
-using signal_packet_no_stream = signal_packet<
-    packet_type::signal_data_no_stream,
-    TSI, TSF, HasTrailer, PayloadWords
->;
-
-// Type 1: Signal data with stream ID
-template<tsi_type TSI = tsi_type::none,
-         tsf_type TSF = tsf_type::none,
-         bool HasTrailer = false,
-         size_t PayloadWords = 256>
-using signal_packet_with_stream = signal_packet<
-    packet_type::signal_data_with_stream,
-    TSI, TSF, HasTrailer, PayloadWords
->;
 
 }  // namespace vrtio

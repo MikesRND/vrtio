@@ -8,10 +8,9 @@
 
 int main() {
     // Define a packet type with trailer enabled
-    using PacketType = vrtio::signal_packet<
+    using PacketType = vrtio::SignalPacket<
         vrtio::packet_type::signal_data_with_stream,
-        vrtio::tsi_type::utc,
-        vrtio::tsf_type::none,
+        vrtio::TimeStampUTC,  // Using UTC timestamps
         true,   // HasTrailer = true
         128     // Payload words
     >;
@@ -25,7 +24,7 @@ int main() {
     std::cout << "Example 1: Building a packet with good status\n";
     std::cout << "----------------------------------------------\n";
 
-    auto packet = vrtio::packet_builder<PacketType>(buffer.data())
+    auto packet = vrtio::PacketBuilder<PacketType>(buffer.data())
         .stream_id(0x12345678)
         .timestamp_integer(1000000)
         .trailer_good_status()  // Sets valid data and calibrated time
@@ -59,7 +58,7 @@ int main() {
     std::cout << "Example 3: Indicating error conditions\n";
     std::cout << "---------------------------------------\n";
 
-    auto error_packet = vrtio::packet_builder<PacketType>(buffer.data())
+    auto error_packet = vrtio::PacketBuilder<PacketType>(buffer.data())
         .stream_id(0xAABBCCDD)
         .timestamp_integer(2000000)
         .trailer_valid_data(false)    // Data not valid
@@ -82,7 +81,7 @@ int main() {
     std::cout << "Example 4: Bulk status configuration\n";
     std::cout << "-------------------------------------\n";
 
-    auto status_packet = vrtio::packet_builder<PacketType>(buffer.data())
+    auto status_packet = vrtio::PacketBuilder<PacketType>(buffer.data())
         .stream_id(0x11111111)
         .timestamp_integer(3000000)
         .trailer_status(
@@ -110,7 +109,7 @@ int main() {
     std::cout << "---------------------------------------\n";
 
     // Simulate receiving a packet
-    auto rx_packet = vrtio::packet_builder<PacketType>(buffer.data())
+    auto rx_packet = vrtio::PacketBuilder<PacketType>(buffer.data())
         .stream_id(0xFEDCBA98)
         .timestamp_integer(4000000)
         .trailer_good_status()

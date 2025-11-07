@@ -31,9 +31,14 @@ add_executable(trailer_test trailer_test.cpp)
 target_link_libraries(trailer_test PRIVATE vrtio GTest::gtest_main)
 add_test(NAME trailer_test COMMAND trailer_test)
 
+# Timestamp tests
+add_executable(timestamp_test timestamp_test.cpp)
+target_link_libraries(timestamp_test PRIVATE vrtio GTest::gtest_main)
+add_test(NAME timestamp_test COMMAND timestamp_test)
+
 # Set C++20 standard for tests
 set_target_properties(
-    roundtrip_test endian_test builder_test security_test trailer_test
+    roundtrip_test endian_test builder_test security_test trailer_test timestamp_test
     PROPERTIES
         CXX_STANDARD 20
         CXX_STANDARD_REQUIRED ON

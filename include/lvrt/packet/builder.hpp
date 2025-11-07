@@ -8,15 +8,15 @@ namespace vrtio {
 
 // Forward declaration
 template<typename PacketType>
-class packet_builder;
+class PacketBuilder;
 
 // Builder for fluent packet construction on user-provided buffer
 // CRITICAL FIX: Now operates directly on user buffer, no internal copy
 template<typename PacketType>
-class packet_builder {
+class PacketBuilder {
 public:
     // Constructor takes user buffer and initializes it
-    explicit packet_builder(uint8_t* buffer) noexcept
+    explicit PacketBuilder(uint8_t* buffer) noexcept
         : buffer_(buffer) {
         // Initialize the packet header in the user's buffer
         PacketType packet(buffer_);
@@ -43,6 +43,16 @@ public:
         requires requires(PacketType p) { p.set_timestamp_fractional(ts); } {
         PacketType packet(buffer_, false);  // Don't reinitialize
         packet.set_timestamp_fractional(ts);
+        return *this;
+    }
+
+    // Unified timestamp setter (works with packet's TimeStampType)
+    auto& timestamp(const typename PacketType::timestamp_type& ts) noexcept
+        requires requires(PacketType p, typename PacketType::timestamp_type t) {
+            p.setTimeStamp(t);
+        } {
+        PacketType packet(buffer_, false);  // Don't reinitialize
+        packet.setTimeStamp(ts);
         return *this;
     }
 
@@ -265,12 +275,12 @@ private:
 
 // Deduction guide
 template<typename PacketType>
-packet_builder(PacketType) -> packet_builder<PacketType>;
+PacketBuilder(PacketType) -> PacketBuilder<PacketType>;
 
 // Helper function to create builder
 template<typename PacketType>
 auto make_builder(uint8_t* buffer) noexcept {
-    return packet_builder<PacketType>(buffer);
+    return PacketBuilder<PacketType>(buffer);
 }
 
 }  // namespace vrtio
