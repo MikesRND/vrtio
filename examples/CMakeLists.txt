@@ -12,8 +12,12 @@ target_link_libraries(trailer_example PRIVATE vrtio)
 add_executable(timestamp_example timestamp_example.cpp)
 target_link_libraries(timestamp_example PRIVATE vrtio)
 
+# Context packet example
+add_executable(context_example context_example.cpp)
+target_link_libraries(context_example PRIVATE vrtio)
+
 # Set C++20 standard
-set_target_properties(basic_usage trailer_example timestamp_example PROPERTIES
+set_target_properties(basic_usage trailer_example timestamp_example context_example PROPERTIES
     CXX_STANDARD 20
     CXX_STANDARD_REQUIRED ON
     CXX_EXTENSIONS OFF
@@ -41,6 +45,13 @@ add_custom_target(run-timestamp-example
     COMMENT "Running timestamp example"
 )
 
+add_custom_target(run-context-example
+    COMMAND context_example
+    DEPENDS context_example
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Running context example"
+)
+
 add_custom_target(run-examples
     COMMAND ${CMAKE_COMMAND} -E echo "Running all examples..."
     COMMAND basic_usage
@@ -48,7 +59,9 @@ add_custom_target(run-examples
     COMMAND trailer_example
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND timestamp_example
-    DEPENDS basic_usage trailer_example timestamp_example
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND context_example
+    DEPENDS basic_usage trailer_example timestamp_example context_example
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT "Running all examples"
 )
@@ -61,7 +74,9 @@ add_custom_target(run
     COMMAND trailer_example
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND timestamp_example
-    DEPENDS basic_usage trailer_example timestamp_example
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND context_example
+    DEPENDS basic_usage trailer_example timestamp_example context_example
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT "Running all examples"
 )

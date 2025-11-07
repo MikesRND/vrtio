@@ -48,6 +48,31 @@ inline constexpr size_t vrt_word_bits = 32;
 inline constexpr size_t max_packet_words = 65535;
 inline constexpr size_t max_packet_bytes = max_packet_words * vrt_word_size;
 
+// Header bit positions and masks
+namespace header {
+    // Packet type field (bits 28-31)
+    inline constexpr uint8_t PACKET_TYPE_SHIFT = 28;
+    inline constexpr uint32_t PACKET_TYPE_MASK = 0xF0000000;
+
+    // Indicator bits
+    inline constexpr uint32_t CLASS_ID_INDICATOR = (1U << 27);
+    inline constexpr uint32_t TRAILER_INDICATOR = (1U << 26);
+
+    // Stream ID indicator (context packets use bit 25)
+    inline constexpr uint32_t STREAM_ID_INDICATOR = (1U << 25);
+
+    // TSI field (bits 22-23)
+    inline constexpr uint8_t TSI_SHIFT = 22;
+    inline constexpr uint32_t TSI_MASK = 0x00C00000;
+
+    // TSF field (bits 20-21)
+    inline constexpr uint8_t TSF_SHIFT = 20;
+    inline constexpr uint32_t TSF_MASK = 0x00300000;
+
+    // Packet size field (bits 0-15)
+    inline constexpr uint32_t SIZE_MASK = 0x0000FFFF;
+}  // namespace header
+
 // Helper: Check if packet type is signal data
 constexpr bool is_signal_data(packet_type type) noexcept {
     return type == packet_type::signal_data_no_stream ||
@@ -70,6 +95,7 @@ enum class validation_error : uint8_t {
     trailer_bit_mismatch,        // Trailer indicator doesn't match template
     size_field_mismatch,         // Size field doesn't match expected packet size
     invalid_packet_type,         // Reserved or unsupported packet type value
+    unsupported_field,           // Packet contains fields not supported by this implementation
 };
 
 // Convert validation error to human-readable string
@@ -91,6 +117,8 @@ constexpr const char* validation_error_string(validation_error err) noexcept {
             return "Size field doesn't match expected packet size";
         case validation_error::invalid_packet_type:
             return "Invalid or unsupported packet type";
+        case validation_error::unsupported_field:
+            return "Packet contains fields not supported by this implementation";
         default:
             return "Unknown error";
     }
