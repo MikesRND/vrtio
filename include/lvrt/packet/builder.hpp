@@ -24,7 +24,7 @@ public:
 
     // Stream ID (only available if packet has stream ID)
     auto& stream_id(uint32_t id) noexcept
-        requires requires(PacketType p) { p.set_stream_id(id); } {
+        requires requires(PacketType& p) { p.set_stream_id(id); } {
         PacketType packet(buffer_, false);  // Don't reinitialize
         packet.set_stream_id(id);
         return *this;
@@ -32,7 +32,7 @@ public:
 
     // Integer timestamp (only available if packet has TSI)
     auto& timestamp_integer(uint32_t ts) noexcept
-        requires requires(PacketType p) { p.set_timestamp_integer(ts); } {
+        requires requires(PacketType& p) { p.set_timestamp_integer(ts); } {
         PacketType packet(buffer_, false);  // Don't reinitialize
         packet.set_timestamp_integer(ts);
         return *this;
@@ -40,7 +40,7 @@ public:
 
     // Fractional timestamp (only available if packet has TSF)
     auto& timestamp_fractional(uint64_t ts) noexcept
-        requires requires(PacketType p) { p.set_timestamp_fractional(ts); } {
+        requires requires(PacketType& p) { p.set_timestamp_fractional(ts); } {
         PacketType packet(buffer_, false);  // Don't reinitialize
         packet.set_timestamp_fractional(ts);
         return *this;
@@ -48,7 +48,7 @@ public:
 
     // Unified timestamp setter (works with packet's TimeStampType)
     auto& timestamp(const typename PacketType::timestamp_type& ts) noexcept
-        requires requires(PacketType p, typename PacketType::timestamp_type t) {
+        requires requires(PacketType& p, typename PacketType::timestamp_type t) {
             p.setTimeStamp(t);
         } {
         PacketType packet(buffer_, false);  // Don't reinitialize
@@ -58,7 +58,7 @@ public:
 
     // Trailer (only available if packet has trailer)
     auto& trailer(uint32_t t) noexcept
-        requires requires(PacketType p) { p.set_trailer(t); } {
+        requires requires(PacketType& p) { p.set_trailer(t); } {
         PacketType packet(buffer_, false);  // Don't reinitialize
         packet.set_trailer(t);
         return *this;
@@ -71,7 +71,7 @@ public:
      * @param valid true if data is valid
      */
     auto& trailer_valid_data(bool valid) noexcept
-        requires requires(PacketType p) { p.set_trailer_valid_data(valid); } {
+        requires requires(PacketType& p) { p.set_trailer_valid_data(valid); } {
         PacketType packet(buffer_, false);  // Don't reinitialize
         packet.set_trailer_valid_data(valid);
         return *this;
@@ -82,7 +82,7 @@ public:
      * @param calibrated true if time is calibrated
      */
     auto& trailer_calibrated_time(bool calibrated) noexcept
-        requires requires(PacketType p) { p.set_trailer_calibrated_time(calibrated); } {
+        requires requires(PacketType& p) { p.set_trailer_calibrated_time(calibrated); } {
         PacketType packet(buffer_, false);  // Don't reinitialize
         packet.set_trailer_calibrated_time(calibrated);
         return *this;
@@ -93,7 +93,7 @@ public:
      * @param over_range true if over-range occurred
      */
     auto& trailer_over_range(bool over_range) noexcept
-        requires requires(PacketType p) { p.set_trailer_over_range(over_range); } {
+        requires requires(PacketType& p) { p.set_trailer_over_range(over_range); } {
         PacketType packet(buffer_, false);  // Don't reinitialize
         packet.set_trailer_over_range(over_range);
         return *this;
@@ -104,7 +104,7 @@ public:
      * @param loss true if sample loss occurred
      */
     auto& trailer_sample_loss(bool loss) noexcept
-        requires requires(PacketType p) { p.set_trailer_sample_loss(loss); } {
+        requires requires(PacketType& p) { p.set_trailer_sample_loss(loss); } {
         PacketType packet(buffer_, false);  // Don't reinitialize
         packet.set_trailer_sample_loss(loss);
         return *this;
@@ -115,7 +115,7 @@ public:
      * @param locked true if reference is locked
      */
     auto& trailer_reference_lock(bool locked) noexcept
-        requires requires(PacketType p) { p.set_trailer_reference_lock(locked); } {
+        requires requires(PacketType& p) { p.set_trailer_reference_lock(locked); } {
         PacketType packet(buffer_, false);  // Don't reinitialize
         packet.set_trailer_reference_lock(locked);
         return *this;
@@ -126,7 +126,7 @@ public:
      * @param count Number of context packets (0-127)
      */
     auto& trailer_context_packets(uint8_t count) noexcept
-        requires requires(PacketType p) { p.set_trailer_context_packets(count); } {
+        requires requires(PacketType& p) { p.set_trailer_context_packets(count); } {
         PacketType packet(buffer_, false);  // Don't reinitialize
         packet.set_trailer_context_packets(count);
         return *this;
@@ -136,7 +136,7 @@ public:
      * Set trailer to indicate good status (valid data and calibrated time)
      */
     auto& trailer_good_status() noexcept
-        requires requires(PacketType p) { p.set_trailer_good_status(); } {
+        requires requires(PacketType& p) { p.set_trailer_good_status(); } {
         PacketType packet(buffer_, false);  // Don't reinitialize
         packet.set_trailer_good_status();
         return *this;
@@ -147,7 +147,7 @@ public:
      * @param active true if AGC/MGC is active
      */
     auto& trailer_agc_mgc(bool active) noexcept
-        requires requires(PacketType p) { p.set_trailer_agc_mgc(active); } {
+        requires requires(PacketType& p) { p.set_trailer_agc_mgc(active); } {
         PacketType packet(buffer_, false);  // Don't reinitialize
         packet.set_trailer_agc_mgc(active);
         return *this;
@@ -158,7 +158,7 @@ public:
      * @param detected true if signal is detected
      */
     auto& trailer_detected_signal(bool detected) noexcept
-        requires requires(PacketType p) { p.set_trailer_detected_signal(detected); } {
+        requires requires(PacketType& p) { p.set_trailer_detected_signal(detected); } {
         PacketType packet(buffer_, false);  // Don't reinitialize
         packet.set_trailer_detected_signal(detected);
         return *this;
@@ -169,7 +169,7 @@ public:
      * @param inverted true if spectral inversion is present
      */
     auto& trailer_spectral_inversion(bool inverted) noexcept
-        requires requires(PacketType p) { p.set_trailer_spectral_inversion(inverted); } {
+        requires requires(PacketType& p) { p.set_trailer_spectral_inversion(inverted); } {
         PacketType packet(buffer_, false);  // Don't reinitialize
         packet.set_trailer_spectral_inversion(inverted);
         return *this;
@@ -180,7 +180,7 @@ public:
      * @param ref_point true if reference point is indicated
      */
     auto& trailer_reference_point(bool ref_point) noexcept
-        requires requires(PacketType p) { p.set_trailer_reference_point(ref_point); } {
+        requires requires(PacketType& p) { p.set_trailer_reference_point(ref_point); } {
         PacketType packet(buffer_, false);  // Don't reinitialize
         packet.set_trailer_reference_point(ref_point);
         return *this;
@@ -191,7 +191,7 @@ public:
      * @param detected true if signal is detected
      */
     auto& trailer_signal_detected(bool detected) noexcept
-        requires requires(PacketType p) { p.set_trailer_signal_detected(detected); } {
+        requires requires(PacketType& p) { p.set_trailer_signal_detected(detected); } {
         PacketType packet(buffer_, false);  // Don't reinitialize
         packet.set_trailer_signal_detected(detected);
         return *this;
@@ -206,7 +206,7 @@ public:
      */
     auto& trailer_status(bool valid_data, bool calibrated_time,
                         bool over_range = false, bool sample_loss = false) noexcept
-        requires requires(PacketType p) { p.set_trailer(0); } {
+        requires requires(PacketType& p) { p.set_trailer(0); } {
         PacketType packet(buffer_, false);  // Don't reinitialize
         uint32_t t = 0;
         if (valid_data) t |= trailer::valid_data_mask;

@@ -3,6 +3,7 @@
 #include "../core/types.hpp"
 #include "../core/cif.hpp"
 #include "../core/endian.hpp"
+#include "../core/detail/header_decode.hpp"
 #include <optional>
 #include <span>
 #include <cstring>
@@ -58,27 +59,21 @@ public:
             return validation_error::buffer_too_small;
         }
 
-        // 1. Read header safely
+        // 1. Read and decode header using shared utility
         uint32_t header = cif::read_u32_safe(buffer_, 0);
+        auto decoded = detail::decode_header(header);
 
-        // 2. Parse ALL header fields including Stream ID!
-        structure_.packet_type = (header >> 28) & 0x0F;
-        structure_.has_class_id = (header >> 27) & 0x01;
-        structure_.has_trailer = (header >> 26) & 0x01;
+        // 2. Store decoded header fields
+        structure_.packet_type = static_cast<uint8_t>(decoded.type);
+        structure_.has_class_id = decoded.has_class_id;
+        structure_.has_trailer = decoded.has_trailer;
+        structure_.has_stream_id = decoded.has_stream_id;  // Bit 25 for context packets
+        structure_.tsi = decoded.tsi;
+        structure_.tsf = decoded.tsf;
+        structure_.packet_size_words = decoded.size_words;
 
-        // CRITICAL: Bit 25 is Stream ID for context packets!
-        structure_.has_stream_id = (header >> 25) & 0x01;
-
-        // TSI/TSF in bits 22-24 (context packets can have timestamps)
-        uint8_t tsi_bits = (header >> 22) & 0x03;
-        uint8_t tsf_bits = (header >> 20) & 0x03;
-        structure_.tsi = static_cast<tsi_type>(tsi_bits);
-        structure_.tsf = static_cast<tsf_type>(tsf_bits);
-
-        structure_.packet_size_words = header & 0xFFFF;
-
-        // 3. Validate packet type
-        if (structure_.packet_type != 4 && structure_.packet_type != 5) {
+        // 3. Validate packet type (must be context: 4 or 5)
+        if (decoded.type != packet_type::context && decoded.type != packet_type::ext_context) {
             return validation_error::invalid_packet_type;
         }
 

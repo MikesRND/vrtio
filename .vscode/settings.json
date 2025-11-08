@@ -1,0 +1,17 @@
+{
+    // Recommended VSCode settings for VRTIO development
+    // These settings ensure proper IntelliSense for I/O helpers
+    // Feel free to customize for your environment
+    "cmake.buildDirectory": "${workspaceFolder}/build",
+    "cmake.configureSettings": {
+        "VRTIO_BUILD_IO_HELPERS": "ON",
+        "VRTIO_BUILD_TESTS": "ON",
+        "VRTIO_BUILD_EXAMPLES": "ON"
+    },
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "C_Cpp.intelliSenseEngine": "default",
+    "files.associations": {
+        "*.hpp": "cpp",
+        "*.cpp": "cpp"
+    }
+}

@@ -5,6 +5,7 @@
 #include "../core/class_id.hpp"
 #include "../core/timestamp_traits.hpp"
 #include "../core/endian.hpp"
+#include "../core/detail/header_decode.hpp"
 #include <cstring>
 #include <span>
 
@@ -231,8 +232,27 @@ private:
     }
 
     void init_timestamps() noexcept {
-        // Initialize timestamp fields if present
-        // Implementation depends on timestamp type
+        // Calculate offset to timestamp fields
+        size_t offset = 4;  // After header
+
+        if constexpr (HasStreamId) {
+            offset += 4;
+        }
+
+        if constexpr (has_class_id) {
+            offset += 8;  // 64-bit class ID
+        }
+
+        // Zero-initialize TSI if present
+        if constexpr (tsi != tsi_type::none) {
+            cif::write_u32_safe(buffer_, offset, 0);
+            offset += 4;
+        }
+
+        // Zero-initialize TSF if present
+        if constexpr (tsf != tsf_type::none) {
+            cif::write_u64_safe(buffer_, offset, 0);
+        }
     }
 
     void write_cif_words() noexcept {
@@ -269,6 +289,53 @@ public:
 
     void set_stream_id(uint32_t id) noexcept requires(HasStreamId) {
         cif::write_u32_safe(buffer_, 4, id);
+    }
+
+    // Timestamp accessors
+
+    // Integer timestamp accessors (only if TSI != none)
+    uint32_t timestamp_integer() const noexcept requires(tsi != tsi_type::none) {
+        size_t offset = 4;
+        if constexpr (HasStreamId) offset += 4;
+        if constexpr (has_class_id) offset += 8;
+        return cif::read_u32_safe(buffer_, offset);
+    }
+
+    void set_timestamp_integer(uint32_t ts) noexcept requires(tsi != tsi_type::none) {
+        size_t offset = 4;
+        if constexpr (HasStreamId) offset += 4;
+        if constexpr (has_class_id) offset += 8;
+        cif::write_u32_safe(buffer_, offset, ts);
+    }
+
+    // Fractional timestamp accessors (only if TSF != none)
+    uint64_t timestamp_fractional() const noexcept requires(tsf != tsf_type::none) {
+        size_t offset = 4;
+        if constexpr (HasStreamId) offset += 4;
+        if constexpr (has_class_id) offset += 8;
+        if constexpr (tsi != tsi_type::none) offset += 4;
+        return cif::read_u64_safe(buffer_, offset);
+    }
+
+    void set_timestamp_fractional(uint64_t ts) noexcept requires(tsf != tsf_type::none) {
+        size_t offset = 4;
+        if constexpr (HasStreamId) offset += 4;
+        if constexpr (has_class_id) offset += 8;
+        if constexpr (tsi != tsi_type::none) offset += 4;
+        cif::write_u64_safe(buffer_, offset, ts);
+    }
+
+    // Unified timestamp accessors
+    TimeStampType getTimeStamp() const noexcept requires(has_timestamp) {
+        return TimeStampType::fromComponents(
+            timestamp_integer(),
+            timestamp_fractional()
+        );
+    }
+
+    void setTimeStamp(const TimeStampType& ts) noexcept requires(has_timestamp) {
+        set_timestamp_integer(ts.seconds());
+        set_timestamp_fractional(ts.fractional());
     }
 
     // Example field setters with compile-time offset calculation
@@ -367,18 +434,17 @@ public:
             return validation_error::buffer_too_small;
         }
 
-        // Read header
+        // Read and decode header using shared utility
         uint32_t header = cif::read_u32_safe(buffer_, 0);
+        auto decoded = detail::decode_header(header);
 
-        // Check packet type
-        uint8_t packet_type = (header >> 28) & 0x0F;
-        if (packet_type != 4 && packet_type != 5) {
+        // Check packet type (must be context: 4 or 5)
+        if (decoded.type != packet_type::context && decoded.type != packet_type::ext_context) {
             return validation_error::packet_type_mismatch;
         }
 
         // Check size field
-        uint16_t size_field = header & 0xFFFF;
-        if (size_field != total_words) {
+        if (decoded.size_words != total_words) {
             return validation_error::size_field_mismatch;
         }
 

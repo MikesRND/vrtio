@@ -13,7 +13,7 @@
 // - Zero-copy operations on user buffers
 //
 // Phase 2 Features:
-// - Context packets (type 4)
+    // - Context packets (type 4)
 // - Runtime parsing with ContextPacketView
 // - Compile-time creation with ContextPacket template
 // - CIF0, CIF1, CIF2 field support
