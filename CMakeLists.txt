@@ -19,6 +19,21 @@ target_compile_options(vrtio INTERFACE
     $<$<CXX_COMPILER_ID:MSVC>:/W4>
 )
 
+# Optional: Build I/O helpers (default OFF for minimal consumer experience)
+option(VRTIO_BUILD_IO_HELPERS "Build optional I/O helper headers" OFF)
+if(VRTIO_BUILD_IO_HELPERS)
+    add_library(vrtio_io INTERFACE)
+    target_link_libraries(vrtio_io INTERFACE vrtio)
+    target_compile_definitions(vrtio_io INTERFACE VRTIO_HAS_IO_HELPERS)
+    target_include_directories(vrtio_io INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+    )
+endif()
+
+# Optional: Build I/O tests (only when I/O helpers are enabled)
+option(VRTIO_BUILD_IO_TESTS "Build I/O helper tests" ON)
+
 # Optional: Build tests
 option(VRTIO_BUILD_TESTS "Build tests" ON)
 if(VRTIO_BUILD_TESTS)

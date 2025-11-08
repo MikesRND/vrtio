@@ -48,6 +48,17 @@ cmake-build-*/
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
-Makefile
 *.cmake
 !CMakeLists.txt
+
+# Keep custom Makefile and compile commands symlink
+!Makefile
+!compile_commands.json
+
+# VSCode
+.vscode/*
+!.vscode/c_cpp_properties.json
+!.vscode/settings.json
+# Ignore personal VSCode files
+.vscode/launch.json
+.vscode/tasks.json

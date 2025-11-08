@@ -6,6 +6,7 @@
 #include "../core/trailer.hpp"
 #include "../core/timestamp.hpp"
 #include "../core/timestamp_traits.hpp"
+#include "../core/detail/header_decode.hpp"
 #include <cstring>
 #include <cstdio>
 #include <span>
@@ -458,36 +459,32 @@ public:
             return validation_error::buffer_too_small;
         }
 
-        // Read and decode header
+        // Read and decode header using shared utility
         uint32_t header = read_u32(header_offset);
+        auto decoded = detail::decode_header(header);
 
         // Check 2: Packet type field (bits 31-28)
-        uint8_t header_type = (header >> 28) & 0x0F;
-        if (header_type != static_cast<uint8_t>(Type)) {
+        if (decoded.type != Type) {
             return validation_error::packet_type_mismatch;
         }
 
         // Check 3: Trailer bit (bit 26)
-        bool header_has_trailer = (header >> 26) & 0x01;
-        if (header_has_trailer != HasTrailer) {
+        if (decoded.has_trailer != HasTrailer) {
             return validation_error::trailer_bit_mismatch;
         }
 
         // Check 4: TSI field (bits 23-22)
-        uint8_t header_tsi = (header >> 22) & 0x03;
-        if (header_tsi != static_cast<uint8_t>(TSI)) {
+        if (decoded.tsi != TSI) {
             return validation_error::tsi_mismatch;
         }
 
         // Check 5: TSF field (bits 21-20)
-        uint8_t header_tsf = (header >> 20) & 0x03;
-        if (header_tsf != static_cast<uint8_t>(TSF)) {
+        if (decoded.tsf != TSF) {
             return validation_error::tsf_mismatch;
         }
 
         // Check 6: Size field (bits 15-0)
-        uint16_t header_size = header & 0xFFFF;
-        if (header_size != total_words) {
+        if (decoded.size_words != total_words) {
             return validation_error::size_field_mismatch;
         }
 
