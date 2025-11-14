@@ -33,3 +33,40 @@ set_target_properties(enhanced_reader_test PROPERTIES
     CXX_STANDARD_REQUIRED ON
     CXX_EXTENSIONS OFF
 )
+
+# UDP reader tests (Linux/POSIX only)
+if(UNIX)
+    add_executable(udp_reader_test udp_reader_test.cpp)
+    target_link_libraries(udp_reader_test PRIVATE vrtio GTest::gtest_main)
+    add_test(NAME udp_reader_test COMMAND udp_reader_test)
+
+    set_target_properties(udp_reader_test PROPERTIES
+        CXX_STANDARD 20
+        CXX_STANDARD_REQUIRED ON
+        CXX_EXTENSIONS OFF
+    )
+endif()
+
+# File writer tests
+add_executable(file_writer_test file_writer_test.cpp)
+target_link_libraries(file_writer_test PRIVATE vrtio GTest::gtest_main)
+add_test(NAME file_writer_test COMMAND file_writer_test)
+
+set_target_properties(file_writer_test PROPERTIES
+    CXX_STANDARD 20
+    CXX_STANDARD_REQUIRED ON
+    CXX_EXTENSIONS OFF
+)
+
+# UDP writer tests (Linux/POSIX only)
+if(UNIX)
+    add_executable(udp_writer_test udp_writer_test.cpp)
+    target_link_libraries(udp_writer_test PRIVATE vrtio GTest::gtest_main)
+    add_test(NAME udp_writer_test COMMAND udp_writer_test)
+
+    set_target_properties(udp_writer_test PROPERTIES
+        CXX_STANDARD 20
+        CXX_STANDARD_REQUIRED ON
+        CXX_EXTENSIONS OFF
+    )
+endif()

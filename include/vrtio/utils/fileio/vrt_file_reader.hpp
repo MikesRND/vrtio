@@ -5,6 +5,7 @@
 #include <string>
 #include <utility>
 
+#include "../detail/iteration_helpers.hpp"
 #include "detail/packet_parser.hpp"
 #include "packet_variant.hpp"
 #include "raw_vrt_file_reader.hpp"
@@ -154,18 +155,7 @@ public:
      */
     template <typename Callback>
     size_t for_each_validated_packet(Callback&& callback) noexcept {
-        size_t count = 0;
-
-        while (auto pkt = read_next_packet()) {
-            bool continue_processing = callback(*pkt);
-            count++;
-
-            if (!continue_processing) {
-                break;
-            }
-        }
-
-        return count;
+        return detail::for_each_validated_packet(*this, std::forward<Callback>(callback));
     }
 
     /**
@@ -189,20 +179,7 @@ public:
      */
     template <typename Callback>
     size_t for_each_data_packet(Callback&& callback) noexcept {
-        size_t count = 0;
-
-        while (auto pkt = read_next_packet()) {
-            if (auto* data_pkt = std::get_if<vrtio::DataPacketView>(&(*pkt))) {
-                bool continue_processing = callback(*data_pkt);
-                count++;
-
-                if (!continue_processing) {
-                    break;
-                }
-            }
-        }
-
-        return count;
+        return detail::for_each_data_packet(*this, std::forward<Callback>(callback));
     }
 
     /**
@@ -227,20 +204,7 @@ public:
      */
     template <typename Callback>
     size_t for_each_context_packet(Callback&& callback) noexcept {
-        size_t count = 0;
-
-        while (auto pkt = read_next_packet()) {
-            if (auto* ctx_pkt = std::get_if<vrtio::ContextPacketView>(&(*pkt))) {
-                bool continue_processing = callback(*ctx_pkt);
-                count++;
-
-                if (!continue_processing) {
-                    break;
-                }
-            }
-        }
-
-        return count;
+        return detail::for_each_context_packet(*this, std::forward<Callback>(callback));
     }
 
     /**
@@ -264,21 +228,8 @@ public:
      */
     template <typename Callback>
     size_t for_each_packet_with_stream_id(uint32_t stream_id_filter, Callback&& callback) noexcept {
-        size_t count = 0;
-
-        while (auto pkt = read_next_packet()) {
-            auto sid = stream_id(*pkt);
-            if (sid && *sid == stream_id_filter) {
-                bool continue_processing = callback(*pkt);
-                count++;
-
-                if (!continue_processing) {
-                    break;
-                }
-            }
-        }
-
-        return count;
+        return detail::for_each_packet_with_stream_id(*this, stream_id_filter,
+                                                      std::forward<Callback>(callback));
     }
 
     /**

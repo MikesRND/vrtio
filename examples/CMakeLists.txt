@@ -20,12 +20,22 @@ target_link_libraries(context_example PRIVATE vrtio)
 add_executable(file_parsing_example file_parsing_example.cpp)
 target_link_libraries(file_parsing_example PRIVATE vrtio)
 
-# Set C++20 standard
-set_target_properties(basic_usage trailer_example timestamp_example context_example file_parsing_example PROPERTIES
-    CXX_STANDARD 20
-    CXX_STANDARD_REQUIRED ON
-    CXX_EXTENSIONS OFF
-)
+# UDP reader example (Linux/POSIX only)
+if(UNIX)
+    add_executable(udp_reader_example udp_reader_example.cpp)
+    target_link_libraries(udp_reader_example PRIVATE vrtio)
+    set_target_properties(basic_usage trailer_example timestamp_example context_example file_parsing_example udp_reader_example PROPERTIES
+        CXX_STANDARD 20
+        CXX_STANDARD_REQUIRED ON
+        CXX_EXTENSIONS OFF
+    )
+else()
+    set_target_properties(basic_usage trailer_example timestamp_example context_example file_parsing_example PROPERTIES
+        CXX_STANDARD 20
+        CXX_STANDARD_REQUIRED ON
+        CXX_EXTENSIONS OFF
+    )
+endif()
 
 # Add custom targets to run examples
 add_custom_target(run-basic-usage
