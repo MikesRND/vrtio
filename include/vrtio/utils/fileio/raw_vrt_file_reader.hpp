@@ -179,13 +179,13 @@ public:
         }
 
         // Early validation: decode header
-        uint32_t header_host = detail::network_to_host32(header_raw);
-        auto decoded = detail::decode_header(header_host);
+        uint32_t header_host = vrtio::detail::network_to_host32(header_raw);
+        auto decoded = vrtio::detail::decode_header(header_host);
         result.header = header_host;
         result.type = decoded.type;
 
         // Validate packet type
-        if (!detail::is_valid_packet_type(decoded.type)) {
+        if (!vrtio::detail::is_valid_packet_type(decoded.type)) {
             result.error = ValidationError::invalid_packet_type;
             current_offset_ += vrt_word_size;
             return result;
