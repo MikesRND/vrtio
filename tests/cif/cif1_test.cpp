@@ -41,7 +41,7 @@ TEST_F(ContextPacketTest, RuntimeParseCIF1) {
     // Build a packet with CIF1 enabled and Aux Frequency field
     // Type 4 has stream ID: header(1) + stream_id(1) + CIF0(1) + CIF1(1) + Aux Frequency(2) = 6
     // words
-    uint32_t header = (static_cast<uint32_t>(PacketType::Context) << header::packet_type_shift) | 6;
+    uint32_t header = (static_cast<uint32_t>(PacketType::context) << header::packet_type_shift) | 6;
     cif::write_u32_safe(buffer.data(), 0, header);
 
     // Stream ID (type 4 has stream ID per VITA 49.2)

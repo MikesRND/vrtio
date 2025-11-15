@@ -54,7 +54,7 @@ private:
 
     struct ParsedStructure {
         // Header fields
-        PacketType type = PacketType::SignalDataNoId;
+        PacketType type = PacketType::signal_data_no_id;
         bool has_stream_id = false;
         bool has_class_id = false;
         bool has_trailer = false;
@@ -280,9 +280,10 @@ private:
         auto decoded = detail::decode_header(header);
 
         // 3. Validate packet type (must be signal or extension data)
-        if (decoded.type != PacketType::SignalDataNoId && decoded.type != PacketType::SignalData &&
-            decoded.type != PacketType::ExtensionDataNoId &&
-            decoded.type != PacketType::ExtensionData) {
+        if (decoded.type != PacketType::signal_data_no_id &&
+            decoded.type != PacketType::signal_data &&
+            decoded.type != PacketType::extension_data_no_id &&
+            decoded.type != PacketType::extension_data) {
             return ValidationError::packet_type_mismatch;
         }
 

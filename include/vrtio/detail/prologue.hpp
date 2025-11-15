@@ -35,7 +35,7 @@ namespace vrtio {
  * @tparam TimeStampType NoTimeStamp or TimeStamp<TSI,TSF> type
  * @tparam IsContext True for context packets (stream ID always present)
  */
-template <PacketType Type = PacketType::SignalDataNoId, typename ClassIdType = NoClassId,
+template <PacketType Type = PacketType::signal_data_no_id, typename ClassIdType = NoClassId,
           typename TimeStampType = NoTimeStamp, bool IsContext = false>
 class Prologue {
 public:
@@ -46,8 +46,8 @@ public:
 
     // Determine field presence
     static constexpr bool is_context_packet = IsContext;
-    static constexpr bool has_stream_id =
-        is_context_packet || (Type == PacketType::SignalData || Type == PacketType::ExtensionData);
+    static constexpr bool has_stream_id = is_context_packet || (Type == PacketType::signal_data ||
+                                                                Type == PacketType::extension_data);
     static constexpr bool has_class_id = ClassIdTraits<ClassIdType>::has_class_id;
     static constexpr bool has_timestamp = TimestampTraits<TimeStampType>::has_timestamp;
 
@@ -224,7 +224,7 @@ public:
             (tsi != TsiType::none) ? detail::read_u32(buffer_, tsi_offset * vrt_word_size) : 0;
         uint64_t tsf_val =
             (tsf != TsfType::none) ? detail::read_u64(buffer_, tsf_offset * vrt_word_size) : 0;
-        return TimeStampType::fromComponents(tsi_val, tsf_val);
+        return TimeStampType::from_components(tsi_val, tsf_val);
     }
 
     /**

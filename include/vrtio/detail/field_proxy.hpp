@@ -228,7 +228,7 @@ public:
      *
      * Note: Only available for fixed-size fields with interpreted support.
      */
-    void set_value(const detail::interpreted_type_or_dummy_t<FieldTag>& v) noexcept
+    void set_value(detail::interpreted_type_or_dummy_t<FieldTag> v) noexcept
         requires detail::HasInterpretedAccess<FieldTag> &&
                  requires(Packet& p) {
                      { p.mutable_context_buffer() } -> std::same_as<uint8_t*>;

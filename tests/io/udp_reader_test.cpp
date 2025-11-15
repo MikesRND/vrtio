@@ -128,7 +128,7 @@ TEST_F(UDPReaderTest, ConstructReaderFixedPort) {
 TEST_F(UDPReaderTest, ReceiveSinglePacket) {
     // Create reader on ephemeral port
     UDPVRTReader<> reader(uint16_t(0));
-    reader.set_timeout(std::chrono::milliseconds(1000));
+    reader.try_set_timeout(std::chrono::milliseconds(1000));
 
     uint16_t port = reader.socket_port();
     ASSERT_GT(port, 0) << "Should get ephemeral port from kernel";
@@ -155,7 +155,7 @@ TEST_F(UDPReaderTest, ReceiveSinglePacket) {
     // Verify packet contents
     const auto& view = std::get<DataPacketView>(*pkt);
     EXPECT_TRUE(view.is_valid());
-    EXPECT_EQ(view.type(), PacketType::SignalData);
+    EXPECT_EQ(view.type(), PacketType::signal_data);
     EXPECT_TRUE(view.has_stream_id());
 
     auto stream_id = view.stream_id();
@@ -175,7 +175,7 @@ TEST_F(UDPReaderTest, ReceiveSinglePacket) {
 
 TEST_F(UDPReaderTest, ReceiveMultiplePackets) {
     UDPVRTReader<> reader(uint16_t(0));
-    reader.set_timeout(std::chrono::milliseconds(1000));
+    reader.try_set_timeout(std::chrono::milliseconds(1000));
 
     uint16_t port = reader.socket_port();
     ASSERT_GT(port, 0) << "Should get ephemeral port from kernel";
@@ -183,7 +183,7 @@ TEST_F(UDPReaderTest, ReceiveMultiplePackets) {
     const size_t NUM_PACKETS = 5;
 
     // Send multiple packets in background
-    ThreadGuard sender(std::thread([this, port, NUM_PACKETS]() {
+    ThreadGuard sender(std::thread([this, port]() {
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
         for (size_t i = 0; i < NUM_PACKETS; ++i) {
@@ -228,7 +228,7 @@ TEST_F(UDPReaderTest, ReceiveMultiplePackets) {
 
 TEST_F(UDPReaderTest, TimeoutWhenNoData) {
     UDPVRTReader<> reader(uint16_t(0)); // Ephemeral port
-    reader.set_timeout(std::chrono::milliseconds(200));
+    reader.try_set_timeout(std::chrono::milliseconds(200));
 
     auto start = std::chrono::steady_clock::now();
     auto pkt = reader.read_next_packet();
@@ -244,7 +244,7 @@ TEST_F(UDPReaderTest, TimeoutWhenNoData) {
 
 TEST_F(UDPReaderTest, IterationHelper) {
     UDPVRTReader<> reader(uint16_t(0));
-    reader.set_timeout(std::chrono::milliseconds(500));
+    reader.try_set_timeout(std::chrono::milliseconds(500));
 
     uint16_t port = reader.socket_port();
     ASSERT_GT(port, 0) << "Should get ephemeral port from kernel";
@@ -252,7 +252,7 @@ TEST_F(UDPReaderTest, IterationHelper) {
     const size_t NUM_PACKETS = 3;
 
     // Send packets in background
-    ThreadGuard sender(std::thread([this, port, NUM_PACKETS]() {
+    ThreadGuard sender(std::thread([this, port]() {
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
         for (size_t i = 0; i < NUM_PACKETS; ++i) {
@@ -264,7 +264,7 @@ TEST_F(UDPReaderTest, IterationHelper) {
 
     // Use for_each_data_packet helper
     size_t count = 0;
-    reader.for_each_data_packet([&count, NUM_PACKETS](const DataPacketView& view) {
+    reader.for_each_data_packet([&count](const DataPacketView& view) {
         EXPECT_TRUE(view.is_valid());
         EXPECT_TRUE(view.has_stream_id());
         count++;
@@ -278,7 +278,7 @@ TEST_F(UDPReaderTest, IterationHelper) {
 
 TEST_F(UDPReaderTest, TransportStatus) {
     UDPVRTReader<> reader(uint16_t(0));
-    reader.set_timeout(std::chrono::milliseconds(500));
+    reader.try_set_timeout(std::chrono::milliseconds(500));
 
     uint16_t port = reader.socket_port();
     ASSERT_GT(port, 0) << "Should get ephemeral port from kernel";
@@ -312,7 +312,7 @@ TEST_F(UDPReaderTest, TransportStatus) {
 TEST_F(UDPReaderTest, TruncatedDatagram) {
     // Create reader with very small buffer (only 2 words)
     UDPVRTReader<2> reader(uint16_t(0));
-    reader.set_timeout(std::chrono::milliseconds(500));
+    reader.try_set_timeout(std::chrono::milliseconds(500));
 
     uint16_t port = reader.socket_port();
     ASSERT_GT(port, 0) << "Should get ephemeral port from kernel";
@@ -351,7 +351,7 @@ TEST_F(UDPReaderTest, TruncatedDatagram) {
 
 TEST_F(UDPReaderTest, LargePayload) {
     UDPVRTReader<> reader(uint16_t(0));
-    reader.set_timeout(std::chrono::milliseconds(500));
+    reader.try_set_timeout(std::chrono::milliseconds(500));
 
     uint16_t port = reader.socket_port();
     ASSERT_GT(port, 0) << "Should get ephemeral port from kernel";
@@ -386,7 +386,7 @@ TEST_F(UDPReaderTest, LargePayload) {
 
 TEST_F(UDPReaderTest, InvalidHeaderSize) {
     UDPVRTReader<> reader(uint16_t(0));
-    reader.set_timeout(std::chrono::milliseconds(500));
+    reader.try_set_timeout(std::chrono::milliseconds(500));
 
     uint16_t port = reader.socket_port();
     ASSERT_GT(port, 0) << "Should get ephemeral port from kernel";
@@ -423,7 +423,7 @@ TEST_F(UDPReaderTest, InvalidHeaderSize) {
 
 TEST_F(UDPReaderTest, TimeoutIsNonTerminal) {
     UDPVRTReader<> reader(uint16_t(0));
-    reader.set_timeout(std::chrono::milliseconds(100));
+    reader.try_set_timeout(std::chrono::milliseconds(100));
 
     uint16_t port = reader.socket_port();
     ASSERT_GT(port, 0);

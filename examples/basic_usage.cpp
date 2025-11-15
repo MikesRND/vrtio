@@ -14,7 +14,7 @@ int main() {
         std::cout << "Example 1: Creating a signal packet\n";
 
         using Packet = vrtio::SignalDataPacket<vrtio::NoClassId, vrtio::TimeStampUTC,
-                                               vrtio::Trailer::None, 128>;
+                                               vrtio::Trailer::none, 128>;
         alignas(4) std::array<uint8_t, Packet::size_bytes> buffer;
 
         // Prepare payload data
@@ -42,7 +42,7 @@ int main() {
         std::cout << "Example 2: Parsing data\n";
 
         using Packet =
-            vrtio::SignalDataPacket<vrtio::NoClassId, vrtio::NoTimeStamp, vrtio::Trailer::None, 64>;
+            vrtio::SignalDataPacket<vrtio::NoClassId, vrtio::NoTimeStamp, vrtio::Trailer::none, 64>;
         alignas(4) std::array<uint8_t, Packet::size_bytes> buffer;
 
         // Create test data

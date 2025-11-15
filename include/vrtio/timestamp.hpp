@@ -37,7 +37,7 @@ public:
     }
 
     // Factory methods - basic API
-    static constexpr TimeStamp fromComponents(uint32_t sec, uint64_t frac) noexcept {
+    static constexpr TimeStamp from_components(uint32_t sec, uint64_t frac) noexcept {
         return TimeStamp(sec, frac);
     }
 
@@ -45,8 +45,8 @@ public:
     constexpr uint32_t seconds() const noexcept { return seconds_; }
     constexpr uint64_t fractional() const noexcept { return fractional_; }
 
-    constexpr TsiType tsiType() const noexcept { return TSI; }
-    constexpr TsfType tsfType() const noexcept { return TSF; }
+    constexpr TsiType tsi_type() const noexcept { return TSI; }
+    constexpr TsfType tsf_type() const noexcept { return TSF; }
 
     // Comparison operators - basic API available for all types
     constexpr auto operator<=>(const TimeStamp& other) const noexcept = default;
@@ -56,16 +56,16 @@ public:
         requires(is_utc_real_time)
     {
         auto now = std::chrono::system_clock::now();
-        return fromChrono(now);
+        return from_chrono(now);
     }
 
-    static constexpr TimeStamp fromUTCSeconds(uint32_t seconds) noexcept
+    static constexpr TimeStamp from_utc_seconds(uint32_t seconds) noexcept
         requires(is_utc_real_time)
     {
         return TimeStamp(seconds, 0);
     }
 
-    static TimeStamp fromChrono(std::chrono::system_clock::time_point tp) noexcept
+    static TimeStamp from_chrono(std::chrono::system_clock::time_point tp) noexcept
         requires(is_utc_real_time)
     {
         // Convert to duration since epoch
@@ -107,7 +107,7 @@ public:
     }
 
     // UTC-specific conversion methods
-    std::chrono::system_clock::time_point toChrono() const noexcept
+    std::chrono::system_clock::time_point to_chrono() const noexcept
         requires(is_utc_real_time)
     {
         // Convert seconds to duration
@@ -120,14 +120,14 @@ public:
         return std::chrono::system_clock::time_point(sec_duration + nano_duration);
     }
 
-    std::time_t toTimeT() const noexcept
+    std::time_t to_time_t() const noexcept
         requires(is_utc_real_time)
     {
         return static_cast<std::time_t>(seconds_);
     }
 
     // UTC-specific utility method
-    constexpr uint64_t totalPicoseconds() const noexcept
+    constexpr uint64_t total_picoseconds() const noexcept
         requires(is_utc_real_time)
     {
         // Check if multiplication would overflow

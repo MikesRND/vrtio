@@ -15,7 +15,7 @@ void printTimeStamp(const TimeStampUTC& ts, const std::string& label) {
     std::cout << "  Picoseconds: " << ts.fractional() << "\n";
 
     // Convert to human-readable time
-    std::time_t time = ts.toTimeT();
+    std::time_t time = ts.to_time_t();
     std::tm* tm_info = std::gmtime(&time);
     std::cout << "  UTC time: " << std::put_time(tm_info, "%Y-%m-%d %H:%M:%S");
 
@@ -38,19 +38,19 @@ int main() {
     printTimeStamp(ts_now, "Current time");
 
     // From UTC seconds only
-    auto ts_seconds = TimeStampUTC::fromUTCSeconds(1699000000);
+    auto ts_seconds = TimeStampUTC::from_utc_seconds(1699000000);
     printTimeStamp(ts_seconds, "From UTC seconds (1699000000)");
 
     // From components (seconds + picoseconds)
     auto ts_components =
-        TimeStampUTC::fromComponents(1699000000,
-                                     123'456'789'012ULL // 123.456789012 microseconds
+        TimeStampUTC::from_components(1699000000,
+                                      123'456'789'012ULL // 123.456789012 microseconds
         );
     printTimeStamp(ts_components, "From components");
 
     // From std::chrono
     auto sys_time = std::chrono::system_clock::now();
-    auto ts_chrono = TimeStampUTC::fromChrono(sys_time);
+    auto ts_chrono = TimeStampUTC::from_chrono(sys_time);
     printTimeStamp(ts_chrono, "From std::chrono::system_clock");
 
     // Example 2: Using timestamps with packets
@@ -59,7 +59,7 @@ int main() {
 
     // Define packet type with UTC timestamps and real-time picoseconds
     using PacketType = SignalDataPacket<vrtio::NoClassId, TimeStampUTC,
-                                        Trailer::None, // No trailer
+                                        Trailer::none, // No trailer
                                         256            // payload words
                                         >;
 
@@ -79,7 +79,7 @@ int main() {
     std::cout << "3. TimeStamp Arithmetic\n";
     std::cout << "-----------------------\n";
 
-    auto ts_base = TimeStampUTC::fromUTCSeconds(1700000000);
+    auto ts_base = TimeStampUTC::from_utc_seconds(1700000000);
     printTimeStamp(ts_base, "Base timestamp");
 
     // Add duration
@@ -103,9 +103,9 @@ int main() {
     std::cout << "4. TimeStamp Comparisons\n";
     std::cout << "------------------------\n";
 
-    auto ts1 = TimeStampUTC::fromUTCSeconds(1700000000);
-    auto ts2 = TimeStampUTC::fromUTCSeconds(1700000001);
-    auto ts3 = TimeStampUTC::fromComponents(1700000000, 500'000'000'000ULL);
+    auto ts1 = TimeStampUTC::from_utc_seconds(1700000000);
+    auto ts2 = TimeStampUTC::from_utc_seconds(1700000001);
+    auto ts3 = TimeStampUTC::from_components(1700000000, 500'000'000'000ULL);
 
     std::cout << "ts1 (1700000000s): " << ts1.seconds() << "s\n";
     std::cout << "ts2 (1700000001s): " << ts2.seconds() << "s\n";
@@ -123,8 +123,8 @@ int main() {
 
     // Create timestamp with picosecond precision
     auto ts_precise =
-        TimeStampUTC::fromComponents(1700000000,
-                                     123'456'789'012ULL // Exactly 123,456,789,012 picoseconds
+        TimeStampUTC::from_components(1700000000,
+                                      123'456'789'012ULL // Exactly 123,456,789,012 picoseconds
         );
 
     std::cout << "Original timestamp:\n";
@@ -133,8 +133,8 @@ int main() {
     std::cout << "  = " << ts_precise.fractional() / 1'000'000ULL << " microseconds\n";
 
     // Convert to chrono (loses sub-nanosecond precision)
-    auto chrono_time = ts_precise.toChrono();
-    auto ts_from_chrono = TimeStampUTC::fromChrono(chrono_time);
+    auto chrono_time = ts_precise.to_chrono();
+    auto ts_from_chrono = TimeStampUTC::from_chrono(chrono_time);
 
     std::cout << "\nAfter chrono round-trip:\n";
     std::cout << "  Picoseconds: " << ts_from_chrono.fractional() << " ps\n";
@@ -150,7 +150,7 @@ int main() {
     using GPSPacket =
         SignalDataPacket<vrtio::NoClassId,
                          TimeStamp<TsiType::gps, TsfType::real_time>, // GPS timestamp configuration
-                         Trailer::None,                               // No trailer
+                         Trailer::none,                               // No trailer
                          256>;
 
     std::cout << "GPS Packet Configuration:\n";
@@ -192,7 +192,7 @@ int main() {
     // Builder pattern also works with GPS timestamps
     std::cout << "Using PacketBuilder with GPS timestamps:\n";
     alignas(4) std::array<uint8_t, GPSPacket::size_bytes> builder_buffer{};
-    auto gps_ts_builder = GPSTimeStamp::fromComponents(987654321, 123456789012);
+    auto gps_ts_builder = GPSTimeStamp::from_components(987654321, 123456789012);
     auto built_packet = PacketBuilder<GPSPacket>(builder_buffer.data())
                             .stream_id(0xABCD1234)
                             .timestamp(gps_ts_builder)
@@ -220,7 +220,7 @@ int main() {
     using TAIPacket =
         SignalDataPacket<vrtio::NoClassId,
                          TimeStamp<TsiType::other, TsfType::real_time>, // "Other" TSI for TAI
-                         Trailer::None,                                 // No trailer
+                         Trailer::none,                                 // No trailer
                          128>;
 
     std::cout << "TAI Packet Configuration:\n";
@@ -232,7 +232,7 @@ int main() {
 
     // TAI is ahead of UTC by 37 seconds (as of 2024)
     uint32_t tai_seconds = 1699000037; // Example: UTC + 37 seconds
-    auto tai_ts = TimeStamp<TsiType::other, TsfType::real_time>::fromComponents(tai_seconds, 0);
+    auto tai_ts = TimeStamp<TsiType::other, TsfType::real_time>::from_components(tai_seconds, 0);
     tai_packet.set_timestamp(tai_ts);
 
     std::cout << "TAI timestamp example:\n";

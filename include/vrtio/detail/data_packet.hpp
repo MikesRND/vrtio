@@ -23,9 +23,9 @@
 namespace vrtio {
 
 template <PacketType Type, typename ClassIdType = NoClassId, typename TimeStampType = NoTimeStamp,
-          Trailer HasTrailer = Trailer::None, size_t PayloadWords = 0>
-    requires(Type == PacketType::SignalDataNoId || Type == PacketType::SignalData ||
-             Type == PacketType::ExtensionDataNoId || Type == PacketType::ExtensionData) &&
+          Trailer HasTrailer = Trailer::none, size_t PayloadWords = 0>
+    requires(Type == PacketType::signal_data_no_id || Type == PacketType::signal_data ||
+             Type == PacketType::extension_data_no_id || Type == PacketType::extension_data) &&
             ValidPayloadWords<PayloadWords> && ValidTimestampType<TimeStampType> &&
             ValidClassIdType<ClassIdType>
 class DataPacket {
@@ -41,7 +41,7 @@ public:
     static constexpr bool has_stream_id = prologue_type::has_stream_id;
     static constexpr bool has_class_id = prologue_type::has_class_id;
     static constexpr bool has_timestamp = prologue_type::has_timestamp;
-    static constexpr bool has_trailer = (HasTrailer == Trailer::Included);
+    static constexpr bool has_trailer = (HasTrailer == Trailer::included);
 
     // Payload configuration
     static constexpr size_t payload_words = PayloadWords;
@@ -178,13 +178,13 @@ public:
     // Trailer view access
 
     TrailerView trailer() noexcept
-        requires(HasTrailer == Trailer::Included)
+        requires(HasTrailer == Trailer::included)
     {
         return TrailerView(buffer_ + trailer_offset * vrt_word_size);
     }
 
     ConstTrailerView trailer() const noexcept
-        requires(HasTrailer == Trailer::Included)
+        requires(HasTrailer == Trailer::included)
     {
         return ConstTrailerView(buffer_ + trailer_offset * vrt_word_size);
     }
@@ -244,7 +244,7 @@ public:
         }
 
         // Check 4: Trailer bit (bit 26) - use type-aware field
-        if (decoded.trailer_included != (HasTrailer == Trailer::Included)) {
+        if (decoded.trailer_included != (HasTrailer == Trailer::included)) {
             return ValidationError::trailer_bit_mismatch;
         }
 
@@ -276,7 +276,7 @@ private:
 
     // Initialize header with packet metadata
     void init_header() noexcept {
-        prologue_.init_header(total_words, 0, HasTrailer == Trailer::Included);
+        prologue_.init_header(total_words, 0, HasTrailer == Trailer::included);
     }
 
     // Initialize class ID field (zero-initialize, values set via setClassId())
@@ -291,24 +291,24 @@ private:
 
 // Specific aliases that line up with PacketType enum names
 template <typename ClassIdType = NoClassId, typename TimeStampType = NoTimeStamp,
-          Trailer HasTrailer = Trailer::None, size_t PayloadWords = 0>
+          Trailer HasTrailer = Trailer::none, size_t PayloadWords = 0>
 using SignalDataPacket =
-    DataPacket<PacketType::SignalData, ClassIdType, TimeStampType, HasTrailer, PayloadWords>;
+    DataPacket<PacketType::signal_data, ClassIdType, TimeStampType, HasTrailer, PayloadWords>;
 
 template <typename ClassIdType = NoClassId, typename TimeStampType = NoTimeStamp,
-          Trailer HasTrailer = Trailer::None, size_t PayloadWords = 0>
+          Trailer HasTrailer = Trailer::none, size_t PayloadWords = 0>
 using SignalDataPacketNoId =
-    DataPacket<PacketType::SignalDataNoId, ClassIdType, TimeStampType, HasTrailer, PayloadWords>;
+    DataPacket<PacketType::signal_data_no_id, ClassIdType, TimeStampType, HasTrailer, PayloadWords>;
 
 template <typename ClassIdType = NoClassId, typename TimeStampType = NoTimeStamp,
-          Trailer HasTrailer = Trailer::None, size_t PayloadWords = 0>
+          Trailer HasTrailer = Trailer::none, size_t PayloadWords = 0>
 using ExtensionDataPacket =
-    DataPacket<PacketType::ExtensionData, ClassIdType, TimeStampType, HasTrailer, PayloadWords>;
+    DataPacket<PacketType::extension_data, ClassIdType, TimeStampType, HasTrailer, PayloadWords>;
 
 template <typename ClassIdType = NoClassId, typename TimeStampType = NoTimeStamp,
-          Trailer HasTrailer = Trailer::None, size_t PayloadWords = 0>
-using ExtensionDataPacketNoId =
-    DataPacket<PacketType::ExtensionDataNoId, ClassIdType, TimeStampType, HasTrailer, PayloadWords>;
+          Trailer HasTrailer = Trailer::none, size_t PayloadWords = 0>
+using ExtensionDataPacketNoId = DataPacket<PacketType::extension_data_no_id, ClassIdType,
+                                           TimeStampType, HasTrailer, PayloadWords>;
 
 // Deprecated legacy alias retained for source compatibility. Will be removed in a future release.
 } // namespace vrtio

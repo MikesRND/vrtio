@@ -144,7 +144,7 @@ void example_variable_fields() {
     // Note: Context packets ALWAYS have Stream ID per spec
     uint32_t total_words = 1 + 1 + 1 + nmea_words; // header + stream_id + cif0 + gps_ascii
     uint32_t header =
-        (static_cast<uint32_t>(PacketType::Context) << header::packet_type_shift) | total_words;
+        (static_cast<uint32_t>(PacketType::context) << header::packet_type_shift) | total_words;
     cif::write_u32_safe(buffer.data(), 0, header);
 
     // Stream ID (always present for context packets)
@@ -193,7 +193,7 @@ void example_unsupported_rejection() {
     alignas(4) std::array<uint8_t, 64> buffer{};
 
     // Header (context packets always have stream_id + cif0)
-    uint32_t header = (static_cast<uint32_t>(PacketType::Context) << header::packet_type_shift) | 3;
+    uint32_t header = (static_cast<uint32_t>(PacketType::context) << header::packet_type_shift) | 3;
     cif::write_u32_safe(buffer.data(), 0, header);
 
     // Stream ID (always present)

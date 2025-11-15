@@ -8,7 +8,7 @@ using namespace vrtio::field;
 
 // =============================================================================
 // Basic Field Access API Tests
-// Tests for operator[], and get_unchecked() functions
+// Tests for operator[], and make_field_proxy_unchecked() functions
 // Detailed FieldProxy tests are in tests/cif/proxy_test.cpp
 // =============================================================================
 
@@ -63,18 +63,19 @@ int main() {
     assert(!temp.has_value() && "Temperature should not be present");
 
     // =======================================================================
-    // Test get_unchecked() for known field (compile-time packets only)
-    // get_unchecked() returns raw values (Q52.12 for bandwidth)
+    // Test make_field_proxy_unchecked() for known field (compile-time packets only)
+    // make_field_proxy_unchecked() returns raw values (Q52.12 for bandwidth)
     // =======================================================================
 
-    [[maybe_unused]] uint64_t bw_direct = get_unchecked(packet, bandwidth);
+    [[maybe_unused]] uint64_t bw_direct = make_field_proxy_unchecked(packet, bandwidth);
     // 1 MHz in Q52.12 format = 1'000'000 * 4096 = 4'096'000'000
-    assert(bw_direct == 4'096'000'000ULL && "get_unchecked should return correct raw value");
+    assert(bw_direct == 4'096'000'000ULL &&
+           "make_field_proxy_unchecked should return correct raw value");
 
     std::cout << "✓ All field access API tests passed!\n";
     std::cout << "  - operator[] correctly identifies present/absent fields\n";
     std::cout << "  - operator[] returns FieldProxy with correct values\n";
-    std::cout << "  - get_unchecked() provides zero-overhead access\n";
+    std::cout << "  - make_field_proxy_unchecked() provides zero-overhead access\n";
     std::cout << "\nNote: Detailed FieldProxy tests are in tests/cif/proxy_test.cpp\n";
 
     return 0;

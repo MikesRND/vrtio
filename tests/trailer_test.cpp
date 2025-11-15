@@ -9,7 +9,7 @@
 class TrailerFieldTest : public ::testing::Test {
 protected:
     using PacketType = vrtio::SignalDataPacket<vrtio::NoClassId, vrtio::TimeStampUTC,
-                                               vrtio::Trailer::Included, // Trailer included
+                                               vrtio::Trailer::included, // Trailer included
                                                128>;
 
     std::vector<uint8_t> buffer;
@@ -255,7 +255,7 @@ TEST_F(TrailerFieldTest, BitIndependence) {
 
 // Test builder pattern with individual fields
 TEST_F(TrailerFieldTest, BuilderIndividualFields) {
-    auto ts = vrtio::TimeStampUTC::fromComponents(1000000, 0);
+    auto ts = vrtio::TimeStampUTC::from_components(1000000, 0);
     auto packet = vrtio::PacketBuilder<PacketType>(buffer.data())
                       .stream_id(0x12345678)
                       .timestamp(ts)
@@ -341,13 +341,13 @@ TEST_F(TrailerFieldTest, NetworkByteOrder) {
 }
 
 // Test constexpr helper functions directly
-TEST(TrailerHelperTest, GetBit) {
+TEST(TrailerHelperTest, ExtractBit) {
     uint32_t value = 0x00030000; // Bits 16 and 17 set
 
-    EXPECT_TRUE(vrtio::trailer::get_bit<16>(value));
-    EXPECT_TRUE(vrtio::trailer::get_bit<17>(value));
-    EXPECT_FALSE(vrtio::trailer::get_bit<15>(value));
-    EXPECT_FALSE(vrtio::trailer::get_bit<18>(value));
+    EXPECT_TRUE(vrtio::trailer::extract_bit<16>(value));
+    EXPECT_TRUE(vrtio::trailer::extract_bit<17>(value));
+    EXPECT_FALSE(vrtio::trailer::extract_bit<15>(value));
+    EXPECT_FALSE(vrtio::trailer::extract_bit<18>(value));
 }
 
 TEST(TrailerHelperTest, SetBit) {
@@ -363,11 +363,11 @@ TEST(TrailerHelperTest, SetBit) {
     EXPECT_EQ(value, 1U << 16);
 }
 
-TEST(TrailerHelperTest, GetField) {
+TEST(TrailerHelperTest, ExtractField) {
     uint32_t value = 0x0000007F; // Context packets = 127
 
-    uint32_t field = vrtio::trailer::get_field<vrtio::trailer::context_packets_shift,
-                                               vrtio::trailer::context_packets_mask>(value);
+    uint32_t field = vrtio::trailer::extract_field<vrtio::trailer::context_packets_shift,
+                                                   vrtio::trailer::context_packets_mask>(value);
 
     EXPECT_EQ(field, 127U);
 }
@@ -409,11 +409,11 @@ TEST(TrailerHelperTest, HasErrors) {
     EXPECT_FALSE(vrtio::trailer::has_errors((1U << 16) | (1U << 17))); // good status
 }
 
-TEST(TrailerHelperTest, GetContextPackets) {
-    EXPECT_EQ(vrtio::trailer::get_context_packets(0), 0);
-    EXPECT_EQ(vrtio::trailer::get_context_packets(42), 42);
-    EXPECT_EQ(vrtio::trailer::get_context_packets(127), 127);
-    EXPECT_EQ(vrtio::trailer::get_context_packets(0xFFFFFFFF), 127); // Masked to 7 bits
+TEST(TrailerHelperTest, ExtractContextPackets) {
+    EXPECT_EQ(vrtio::trailer::extract_context_packets(0), 0);
+    EXPECT_EQ(vrtio::trailer::extract_context_packets(42), 42);
+    EXPECT_EQ(vrtio::trailer::extract_context_packets(127), 127);
+    EXPECT_EQ(vrtio::trailer::extract_context_packets(0xFFFFFFFF), 127); // Masked to 7 bits
 }
 
 TEST(TrailerHelperTest, CreateGoodStatus) {
@@ -515,7 +515,7 @@ TEST_F(TrailerFieldTest, AllBitsSet) {
 // Test roundtrip through serialization
 TEST_F(TrailerFieldTest, SerializationRoundtrip) {
     // Create and configure packet
-    auto ts = vrtio::TimeStampUTC::fromComponents(999999, 0);
+    auto ts = vrtio::TimeStampUTC::from_components(999999, 0);
     [[maybe_unused]] auto packet1 = vrtio::PacketBuilder<PacketType>(buffer.data())
                                         .stream_id(0xABCDEF00)
                                         .timestamp(ts)

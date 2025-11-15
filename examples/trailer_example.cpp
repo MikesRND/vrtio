@@ -11,7 +11,7 @@ int main() {
     // Define a packet type with trailer enabled
     using PacketType =
         vrtio::SignalDataPacket<vrtio::NoClassId, vrtio::TimeStampUTC, // Using UTC timestamps
-                                vrtio::Trailer::Included,              // Trailer included
+                                vrtio::Trailer::included,              // Trailer included
                                 128                                    // Payload words
                                 >;
 
@@ -26,7 +26,7 @@ int main() {
 
     auto good_status = vrtio::TrailerBuilder{}.valid_data(true).calibrated_time(true);
 
-    auto ts1 = vrtio::TimeStampUTC::fromComponents(1000000, 0);
+    auto ts1 = vrtio::TimeStampUTC::from_components(1000000, 0);
     auto packet = vrtio::PacketBuilder<PacketType>(buffer.data())
                       .stream_id(0x12345678)
                       .timestamp(ts1)
@@ -51,7 +51,7 @@ int main() {
     auto inline_trailer =
         vrtio::TrailerBuilder{}.clear().reference_lock(true).context_packets(5).valid_data(true);
 
-    auto ts2 = vrtio::TimeStampUTC::fromComponents(1500000, 0);
+    auto ts2 = vrtio::TimeStampUTC::from_components(1500000, 0);
     auto inline_packet = vrtio::PacketBuilder<PacketType>(buffer.data())
                              .stream_id(0x12345678)
                              .timestamp(ts2)
@@ -69,7 +69,7 @@ int main() {
     std::cout << "Example 3: Indicating error conditions\n";
     std::cout << "---------------------------------------\n";
 
-    auto ts3 = vrtio::TimeStampUTC::fromComponents(2000000, 0);
+    auto ts3 = vrtio::TimeStampUTC::from_components(2000000, 0);
     auto error_packet = vrtio::PacketBuilder<PacketType>(buffer.data())
                             .stream_id(0xAABBCCDD)
                             .timestamp(ts3)
@@ -99,7 +99,7 @@ int main() {
                               .reference_lock(true)
                               .context_packets(10);
 
-    auto ts4 = vrtio::TimeStampUTC::fromComponents(3000000, 0);
+    auto ts4 = vrtio::TimeStampUTC::from_components(3000000, 0);
     auto status_packet = vrtio::PacketBuilder<PacketType>(buffer.data())
                              .stream_id(0x11111111)
                              .timestamp(ts4)
@@ -123,7 +123,7 @@ int main() {
     std::cout << "---------------------------------------\n";
 
     // Simulate receiving a packet
-    auto ts5 = vrtio::TimeStampUTC::fromComponents(4000000, 0);
+    auto ts5 = vrtio::TimeStampUTC::from_components(4000000, 0);
     auto rx_packet = vrtio::PacketBuilder<PacketType>(buffer.data())
                          .stream_id(0xFEDCBA98)
                          .timestamp(ts5)

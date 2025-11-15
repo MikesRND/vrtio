@@ -63,7 +63,7 @@ constexpr bool is_field_present(uint32_t cif0, uint32_t cif1, uint32_t cif2,
 /// Internal implementation of field access (used by both free functions and operator[])
 template <typename Packet, uint8_t CifWord, uint8_t Bit>
     requires CifPacketBase<Packet>
-auto get_impl(Packet& packet, field::field_tag_t<CifWord, Bit>) noexcept
+auto make_field_proxy(Packet& packet, field::field_tag_t<CifWord, Bit>) noexcept
     -> FieldProxy<field::field_tag_t<CifWord, Bit>, Packet> {
     using Trait = FieldTraits<CifWord, Bit>;
     using Tag = field::field_tag_t<CifWord, Bit>;
@@ -123,7 +123,7 @@ auto get_impl(Packet& packet, field::field_tag_t<CifWord, Bit>) noexcept
 } // namespace detail
 
 // ============================================================================
-// Convenience: get_unchecked() - Read without presence check (faster)
+// Convenience: make_field_proxy_unchecked() - Read without presence check (faster)
 // ============================================================================
 
 /// Read a field value without checking presence (undefined behavior if not present)
@@ -136,7 +136,7 @@ auto get_impl(Packet& packet, field::field_tag_t<CifWord, Bit>) noexcept
 /// @return Field value (undefined if field not present)
 template <typename Packet, uint8_t CifWord, uint8_t Bit>
     requires detail::CifPacketLike<Packet>
-auto get_unchecked(const Packet& packet, field::field_tag_t<CifWord, Bit>) noexcept ->
+auto make_field_proxy_unchecked(const Packet& packet, field::field_tag_t<CifWord, Bit>) noexcept ->
     typename detail::FieldTraits<CifWord, Bit>::value_type {
     using Trait = detail::FieldTraits<CifWord, Bit>;
 

@@ -63,8 +63,8 @@ TEST_F(FieldProxyTest, UncheckedAccess) {
     // Set bandwidth
     packet[bandwidth].set_raw_value(1'000'000ULL);
 
-    // get_unchecked() for zero-overhead access (no presence check)
-    uint64_t bw_direct = get_unchecked(packet, bandwidth);
+    // make_field_proxy_unchecked() for zero-overhead access (no presence check)
+    uint64_t bw_direct = make_field_proxy_unchecked(packet, bandwidth);
     EXPECT_EQ(bw_direct, 1'000'000ULL);
 }
 

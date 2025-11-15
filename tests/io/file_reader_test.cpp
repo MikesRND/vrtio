@@ -149,7 +149,7 @@ TEST(FileReaderTest, ParseSignalPackets) {
             break;
 
         auto& info = reader.last_error();
-        if (info.type == PacketType::SignalData || info.type == PacketType::SignalDataNoId) {
+        if (info.type == PacketType::signal_data || info.type == PacketType::signal_data_no_id) {
             found_signal = true;
 
             // Verify we can feed to SignalPacket (just check header)
@@ -174,7 +174,7 @@ TEST(FileReaderTest, ParseContextPackets) {
             break;
 
         auto& info = reader.last_error();
-        if (info.type == PacketType::Context || info.type == PacketType::ExtensionContext) {
+        if (info.type == PacketType::context || info.type == PacketType::extension_context) {
             found_context = true;
 
             // Verify we can create a ContextPacketView (basic parsing check)
@@ -442,7 +442,7 @@ TEST(FileReaderTest, SineWaveDataFullParse) {
         auto& info = reader.last_error();
 
         // Look for signal packets
-        if (info.type == PacketType::SignalData || info.type == PacketType::SignalDataNoId) {
+        if (info.type == PacketType::signal_data || info.type == PacketType::signal_data_no_id) {
             // Extract payload (skip header + optional fields)
             // For simplicity, assume payload starts after reasonable header
             if (packet.size() > 32) {

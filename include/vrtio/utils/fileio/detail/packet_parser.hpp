@@ -36,7 +36,7 @@ inline PacketVariant parse_and_validate_packet(std::span<const uint8_t> bytes) n
     // 1. Validate minimum buffer size
     if (bytes.size() < 4) {
         return InvalidPacket{ValidationError::buffer_too_small,
-                             PacketType::SignalDataNoId, // Unknown yet
+                             PacketType::signal_data_no_id, // Unknown yet
                              vrtio::detail::DecodedHeader{}, bytes};
     }
 

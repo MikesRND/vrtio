@@ -69,13 +69,13 @@ inline PacketType packet_type(const PacketVariant& pkt) noexcept {
                 // ContextPacketView doesn't expose type(), so we need to infer it
                 // Context packets are always type 4 or 5
                 // We can't tell which without accessing internals, so default to 4
-                return PacketType::Context;
+                return PacketType::context;
             } else if constexpr (std::is_same_v<T, InvalidPacket>) {
                 return p.attempted_type;
             }
 
             // Should never reach here
-            return PacketType::SignalDataNoId;
+            return PacketType::signal_data_no_id;
         },
         pkt);
 }

@@ -37,13 +37,13 @@ TEST_F(TimeStampTest, NormalizationOnConstruction) {
 
 // Factory method tests
 TEST_F(TimeStampTest, FromUTCSeconds) {
-    auto ts = TimeStampUTC::fromUTCSeconds(test_seconds);
+    auto ts = TimeStampUTC::from_utc_seconds(test_seconds);
     EXPECT_EQ(ts.seconds(), test_seconds);
     EXPECT_EQ(ts.fractional(), 0);
 }
 
 TEST_F(TimeStampTest, FromComponents) {
-    auto ts = TimeStampUTC::fromComponents(test_seconds, test_picoseconds);
+    auto ts = TimeStampUTC::from_components(test_seconds, test_picoseconds);
     EXPECT_EQ(ts.seconds(), test_seconds);
     EXPECT_EQ(ts.fractional(), test_picoseconds);
 }
@@ -67,10 +67,10 @@ TEST_F(TimeStampTest, Now) {
 // Chrono conversion tests
 TEST_F(TimeStampTest, FromChrono) {
     auto sys_time = std::chrono::system_clock::now();
-    auto ts = TimeStampUTC::fromChrono(sys_time);
+    auto ts = TimeStampUTC::from_chrono(sys_time);
 
     // Convert back and compare (will lose picosecond precision)
-    auto converted_back = ts.toChrono();
+    auto converted_back = ts.to_chrono();
 
     // Should be within 1 microsecond (chrono typically has nanosecond precision)
     auto diff = std::chrono::abs(sys_time - converted_back);
@@ -79,7 +79,7 @@ TEST_F(TimeStampTest, FromChrono) {
 
 TEST_F(TimeStampTest, ToChrono) {
     TimeStampUTC ts(test_seconds, test_picoseconds);
-    auto sys_time = ts.toChrono();
+    auto sys_time = ts.to_chrono();
 
     auto duration = sys_time.time_since_epoch();
     auto sec = std::chrono::duration_cast<std::chrono::seconds>(duration);
@@ -92,7 +92,7 @@ TEST_F(TimeStampTest, ToChrono) {
 
 TEST_F(TimeStampTest, ToTimeT) {
     TimeStampUTC ts(test_seconds, test_picoseconds);
-    std::time_t t = ts.toTimeT();
+    std::time_t t = ts.to_time_t();
     EXPECT_EQ(t, test_seconds);
 }
 
@@ -262,7 +262,7 @@ TEST_F(TimeStampTest, MaxSafeTimestampDifference) {
 
 // Integration with SignalPacket tests
 TEST_F(TimeStampTest, PacketIntegration) {
-    using PacketType = SignalDataPacket<vrtio::NoClassId, TimeStampUTC, vrtio::Trailer::None, 256>;
+    using PacketType = SignalDataPacket<vrtio::NoClassId, TimeStampUTC, vrtio::Trailer::none, 256>;
 
     alignas(4) std::array<uint8_t, PacketType::size_bytes> buffer{};
     PacketType packet(buffer.data());
@@ -278,7 +278,7 @@ TEST_F(TimeStampTest, PacketIntegration) {
 }
 
 TEST_F(TimeStampTest, BuilderIntegration) {
-    using PacketType = SignalDataPacket<vrtio::NoClassId, TimeStampUTC, vrtio::Trailer::None, 256>;
+    using PacketType = SignalDataPacket<vrtio::NoClassId, TimeStampUTC, vrtio::Trailer::none, 256>;
 
     alignas(4) std::array<uint8_t, PacketType::size_bytes> buffer{};
 
@@ -317,7 +317,7 @@ TEST_F(TimeStampTest, GPSTimestampPacketStructure) {
     // even though the timestamp type itself is not fully implemented
     using GPSPacket =
         SignalDataPacket<vrtio::NoClassId, TimeStamp<TsiType::gps, TsfType::real_time>,
-                         vrtio::Trailer::None, 256>;
+                         vrtio::Trailer::none, 256>;
 
     // Verify the packet has timestamp support
     static_assert(GPSPacket::has_timestamp);
@@ -455,20 +455,20 @@ TEST_F(TimeStampTest, PicosecondPrecision) {
     EXPECT_EQ(ts.fractional(), 123'456'789'012ULL);
 
     // When converting to chrono and back, we lose sub-nanosecond precision
-    auto sys_time = ts.toChrono();
-    auto ts2 = TimeStampUTC::fromChrono(sys_time);
+    auto sys_time = ts.to_chrono();
+    auto ts2 = TimeStampUTC::from_chrono(sys_time);
 
     // Should preserve nanosecond precision (123,456,789 nanoseconds)
     EXPECT_EQ(ts2.seconds(), 100);
     EXPECT_EQ(ts2.fractional(), 123'456'789'000ULL); // Lost the 12 picoseconds
 }
 
-// Epoch boundary tests (testing the fromChrono bounds checking)
+// Epoch boundary tests (testing the from_chrono bounds checking)
 TEST_F(TimeStampTest, PreEpochTimeClampedToZero) {
     // Create a time point before Unix epoch (1970-01-01)
     auto pre_epoch = std::chrono::system_clock::from_time_t(-1); // 1969-12-31 23:59:59
 
-    auto ts = TimeStampUTC::fromChrono(pre_epoch);
+    auto ts = TimeStampUTC::from_chrono(pre_epoch);
 
     // Should clamp to zero (beginning of epoch)
     EXPECT_EQ(ts.seconds(), 0);
@@ -479,7 +479,7 @@ TEST_F(TimeStampTest, FarPreEpochTimeClampedToZero) {
     // Create a time point far before Unix epoch
     auto far_pre_epoch = std::chrono::system_clock::from_time_t(-31536000); // 1969-01-01
 
-    auto ts = TimeStampUTC::fromChrono(far_pre_epoch);
+    auto ts = TimeStampUTC::from_chrono(far_pre_epoch);
 
     // Should clamp to zero
     EXPECT_EQ(ts.seconds(), 0);
@@ -492,7 +492,7 @@ TEST_F(TimeStampTest, PostMaxTimeClampedToMax) {
     auto max_time = std::chrono::system_clock::time_point(
         std::chrono::seconds(static_cast<int64_t>(UINT32_MAX) + 1));
 
-    auto ts = TimeStampUTC::fromChrono(max_time);
+    auto ts = TimeStampUTC::from_chrono(max_time);
 
     // Should clamp to max values
     EXPECT_EQ(ts.seconds(), UINT32_MAX);
@@ -504,7 +504,7 @@ TEST_F(TimeStampTest, FarFutureTimeClampedToMax) {
     auto far_future = std::chrono::system_clock::time_point(
         std::chrono::seconds(static_cast<int64_t>(UINT32_MAX) * 2));
 
-    auto ts = TimeStampUTC::fromChrono(far_future);
+    auto ts = TimeStampUTC::from_chrono(far_future);
 
     // Should clamp to max values
     EXPECT_EQ(ts.seconds(), UINT32_MAX);
@@ -516,7 +516,7 @@ TEST_F(TimeStampTest, ExactMaxTime) {
     auto exact_max = std::chrono::system_clock::time_point(
         std::chrono::seconds(static_cast<int64_t>(UINT32_MAX)));
 
-    auto ts = TimeStampUTC::fromChrono(exact_max);
+    auto ts = TimeStampUTC::from_chrono(exact_max);
 
     // Should be exactly max seconds with zero picoseconds
     EXPECT_EQ(ts.seconds(), UINT32_MAX);
@@ -527,7 +527,7 @@ TEST_F(TimeStampTest, NearEpochBoundary) {
     // Test time just after epoch start
     auto just_after_epoch = std::chrono::system_clock::from_time_t(1); // 1 second after epoch
 
-    auto ts = TimeStampUTC::fromChrono(just_after_epoch);
+    auto ts = TimeStampUTC::from_chrono(just_after_epoch);
 
     EXPECT_EQ(ts.seconds(), 1);
     EXPECT_EQ(ts.fractional(), 0);
@@ -537,7 +537,7 @@ TEST_F(TimeStampTest, NormalRangeTime) {
     // Test a normal time in the valid range (year 2023)
     auto normal_time = std::chrono::system_clock::from_time_t(1672531200); // Jan 1, 2023
 
-    auto ts = TimeStampUTC::fromChrono(normal_time);
+    auto ts = TimeStampUTC::from_chrono(normal_time);
 
     EXPECT_EQ(ts.seconds(), 1672531200);
     EXPECT_EQ(ts.fractional(), 0);
@@ -588,14 +588,14 @@ TEST_F(TimeStampTest, NormalizeExtremeOverflow) {
 }
 
 TEST_F(TimeStampTest, TotalPicosecondsOverflowProtection) {
-    // Test totalPicoseconds() with timestamp that would overflow uint64_t
+    // Test total_picoseconds() with timestamp that would overflow uint64_t
     // Max safe seconds is ~18,446,744 (~213 days)
     uint32_t large_seconds = 20'000'000; // > 213 days, would overflow
 
     TimeStampUTC ts(large_seconds, 500'000'000'000ULL);
 
     // Should return UINT64_MAX instead of overflowing
-    EXPECT_EQ(ts.totalPicoseconds(), UINT64_MAX);
+    EXPECT_EQ(ts.total_picoseconds(), UINT64_MAX);
 }
 
 TEST_F(TimeStampTest, TotalPicosecondsNearMaxSeconds) {
@@ -603,7 +603,7 @@ TEST_F(TimeStampTest, TotalPicosecondsNearMaxSeconds) {
     TimeStampUTC ts(UINT32_MAX, 999'999'999'999ULL);
 
     // Should return UINT64_MAX
-    EXPECT_EQ(ts.totalPicoseconds(), UINT64_MAX);
+    EXPECT_EQ(ts.total_picoseconds(), UINT64_MAX);
 }
 
 TEST_F(TimeStampTest, TotalPicosecondsJustBelowOverflow) {
@@ -614,7 +614,7 @@ TEST_F(TimeStampTest, TotalPicosecondsJustBelowOverflow) {
 
     // Should calculate correctly without overflow
     uint64_t expected = static_cast<uint64_t>(safe_seconds) * 1'000'000'000'000ULL;
-    EXPECT_EQ(ts.totalPicoseconds(), expected);
+    EXPECT_EQ(ts.total_picoseconds(), expected);
 }
 
 TEST_F(TimeStampTest, ArithmeticWithNearMaxTimestamp) {
@@ -699,8 +699,8 @@ TEST_F(TimeStampTest, AddNanosecondMax) {
 
 TEST_F(TimeStampTest, MultiMonthSpanArithmetic) {
     // Test arithmetic with multi-month spans (user-visible use case)
-    TimeStampUTC ts1 = TimeStampUTC::fromUTCSeconds(1700000000); // Nov 2023
-    TimeStampUTC ts2 = TimeStampUTC::fromUTCSeconds(1710000000); // Mar 2024
+    TimeStampUTC ts1 = TimeStampUTC::from_utc_seconds(1700000000); // Nov 2023
+    TimeStampUTC ts2 = TimeStampUTC::from_utc_seconds(1710000000); // Mar 2024
 
     // Calculate difference (about 115 days)
     auto diff = ts2 - ts1;
@@ -739,8 +739,8 @@ TEST_F(TimeStampTest, GPSTimestampConstruction) {
 
     EXPECT_EQ(ts.seconds(), 1234567890);
     EXPECT_EQ(ts.fractional(), 500'000'000'000ULL);
-    EXPECT_EQ(ts.tsiType(), TsiType::gps);
-    EXPECT_EQ(ts.tsfType(), TsfType::real_time);
+    EXPECT_EQ(ts.tsi_type(), TsiType::gps);
+    EXPECT_EQ(ts.tsf_type(), TsfType::real_time);
 }
 
 TEST_F(TimeStampTest, TAITimestampConstruction) {
@@ -749,8 +749,8 @@ TEST_F(TimeStampTest, TAITimestampConstruction) {
 
     EXPECT_EQ(ts.seconds(), 1234567890);
     EXPECT_EQ(ts.fractional(), 500'000'000'000ULL);
-    EXPECT_EQ(ts.tsiType(), TsiType::other);
-    EXPECT_EQ(ts.tsfType(), TsfType::real_time);
+    EXPECT_EQ(ts.tsi_type(), TsiType::other);
+    EXPECT_EQ(ts.tsf_type(), TsfType::real_time);
 }
 
 TEST_F(TimeStampTest, SampleCountTimestampConstruction) {
@@ -759,8 +759,8 @@ TEST_F(TimeStampTest, SampleCountTimestampConstruction) {
 
     EXPECT_EQ(ts.seconds(), 1000);
     EXPECT_EQ(ts.fractional(), 123456789);
-    EXPECT_EQ(ts.tsiType(), TsiType::none);
-    EXPECT_EQ(ts.tsfType(), TsfType::sample_count);
+    EXPECT_EQ(ts.tsi_type(), TsiType::none);
+    EXPECT_EQ(ts.tsf_type(), TsfType::sample_count);
 }
 
 TEST_F(TimeStampTest, GPSTimestampComparison) {
@@ -778,7 +778,7 @@ TEST_F(TimeStampTest, GPSTimestampComparison) {
 
 TEST_F(TimeStampTest, NonUTCFromComponents) {
     using GPSTimeStamp = TimeStamp<TsiType::gps, TsfType::real_time>;
-    auto gps = GPSTimeStamp::fromComponents(12345, 678'000'000'000ULL);
+    auto gps = GPSTimeStamp::from_components(12345, 678'000'000'000ULL);
 
     EXPECT_EQ(gps.seconds(), 12345);
     EXPECT_EQ(gps.fractional(), 678'000'000'000ULL);
@@ -871,7 +871,7 @@ TEST_F(TimeStampTest, FromChronoOverflowUsesSentinel) {
     auto far_future = std::chrono::system_clock::time_point(
         std::chrono::seconds(static_cast<int64_t>(UINT32_MAX) + 1000));
 
-    auto ts = TimeStampUTC::fromChrono(far_future);
+    auto ts = TimeStampUTC::from_chrono(far_future);
 
     EXPECT_EQ(ts.seconds(), UINT32_MAX);
     EXPECT_EQ(ts.fractional(), TimeStampUTC::MAX_FRACTIONAL);
@@ -943,8 +943,8 @@ TEST_F(TimeStampTest, NonUTCTypeTraits) {
     GPSTimeStamp gps;
     TAITimeStamp tai;
 
-    EXPECT_EQ(gps.tsiType(), TsiType::gps);
-    EXPECT_EQ(gps.tsfType(), TsfType::real_time);
-    EXPECT_EQ(tai.tsiType(), TsiType::other);
-    EXPECT_EQ(tai.tsfType(), TsfType::real_time);
+    EXPECT_EQ(gps.tsi_type(), TsiType::gps);
+    EXPECT_EQ(gps.tsf_type(), TsfType::real_time);
+    EXPECT_EQ(tai.tsi_type(), TsiType::other);
+    EXPECT_EQ(tai.tsf_type(), TsfType::real_time);
 }

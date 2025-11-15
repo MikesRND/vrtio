@@ -26,7 +26,7 @@ TEST(QuickstartSnippet, CreateDataPacket) {
     // Define packet type with UTC timestamp
     using PacketType = vrtio::SignalDataPacket<vrtio::NoClassId,     // No class ID
                                                vrtio::TimeStampUTC,  // Include UTC timestamp
-                                               vrtio::Trailer::None, // No trailer
+                                               vrtio::Trailer::none, // No trailer
                                                2                     // Max payload words (8 bytes)
                                                >;
 

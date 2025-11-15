@@ -55,13 +55,13 @@ TEST_F(UDPWriterTest, CreateUnboundWriter) {
 TEST_F(UDPWriterTest, WriteCompileTimePacket) {
     // Create reader to receive packet
     vrtio::utils::netio::UDPVRTReader<> reader(test_port);
-    reader.set_timeout(std::chrono::milliseconds(100));
+    reader.try_set_timeout(std::chrono::milliseconds(100));
 
     // Create writer
     UDPVRTWriter writer("127.0.0.1", test_port);
 
     // Create and send packet
-    using PacketType = SignalDataPacket<NoClassId, NoTimeStamp, Trailer::None, 64>;
+    using PacketType = SignalDataPacket<NoClassId, NoTimeStamp, Trailer::none, 64>;
     alignas(4) std::array<uint8_t, PacketType::size_bytes> buffer{};
 
     auto packet =
@@ -83,11 +83,11 @@ TEST_F(UDPWriterTest, WriteCompileTimePacket) {
 
 TEST_F(UDPWriterTest, WriteMultiplePackets) {
     vrtio::utils::netio::UDPVRTReader<> reader(test_port);
-    reader.set_timeout(std::chrono::milliseconds(100));
+    reader.try_set_timeout(std::chrono::milliseconds(100));
 
     UDPVRTWriter writer("127.0.0.1", test_port);
 
-    using PacketType = SignalDataPacket<NoClassId, NoTimeStamp, Trailer::None, 64>;
+    using PacketType = SignalDataPacket<NoClassId, NoTimeStamp, Trailer::none, 64>;
     alignas(4) std::array<uint8_t, PacketType::size_bytes> buffer{};
 
     // Send 10 packets
@@ -118,12 +118,12 @@ TEST_F(UDPWriterTest, WriteMultiplePackets) {
 
 TEST_F(UDPWriterTest, RoundTripDataPacket) {
     vrtio::utils::netio::UDPVRTReader<> reader(test_port);
-    reader.set_timeout(std::chrono::milliseconds(100));
+    reader.try_set_timeout(std::chrono::milliseconds(100));
 
     UDPVRTWriter writer("127.0.0.1", test_port);
 
     // Create packet with stream ID and timestamp
-    using PacketType = SignalDataPacket<NoClassId, TimeStampUTC, Trailer::None, 64>;
+    using PacketType = SignalDataPacket<NoClassId, TimeStampUTC, Trailer::none, 64>;
     alignas(4) std::array<uint8_t, PacketType::size_bytes> buffer{};
 
     const uint32_t test_stream_id = 0xABCDEF01;
@@ -156,7 +156,7 @@ TEST_F(UDPWriterTest, RoundTripDataPacket) {
 
 TEST_F(UDPWriterTest, RoundTripContextPacket) {
     vrtio::utils::netio::UDPVRTReader<> reader(test_port);
-    reader.set_timeout(std::chrono::milliseconds(100));
+    reader.try_set_timeout(std::chrono::milliseconds(100));
 
     UDPVRTWriter writer("127.0.0.1", test_port);
 
@@ -192,7 +192,7 @@ TEST_F(UDPWriterTest, RejectInvalidPacket) {
 
     // Create InvalidPacket variant
     InvalidPacket invalid_pkt{.error = vrtio::ValidationError::packet_type_mismatch,
-                              .attempted_type = vrtio::PacketType::SignalData,
+                              .attempted_type = vrtio::PacketType::signal_data,
                               .header = {},
                               .raw_bytes = {}};
 
@@ -215,7 +215,7 @@ TEST_F(UDPWriterTest, EnforceMTU) {
     writer.set_mtu(100);
 
     // Create packet larger than MTU
-    using PacketType = SignalDataPacket<NoClassId, NoTimeStamp, Trailer::None, 256>;
+    using PacketType = SignalDataPacket<NoClassId, NoTimeStamp, Trailer::none, 256>;
     alignas(4) std::array<uint8_t, PacketType::size_bytes> buffer{};
 
     std::array<uint8_t, 1024> large_payload{};
@@ -232,7 +232,7 @@ TEST_F(UDPWriterTest, EnforceMTU) {
 
 TEST_F(UDPWriterTest, MTUAllowsValidPacket) {
     vrtio::utils::netio::UDPVRTReader<> reader(test_port);
-    reader.set_timeout(std::chrono::milliseconds(100));
+    reader.try_set_timeout(std::chrono::milliseconds(100));
 
     UDPVRTWriter writer("127.0.0.1", test_port);
 
@@ -240,7 +240,7 @@ TEST_F(UDPWriterTest, MTUAllowsValidPacket) {
     writer.set_mtu(1500);
 
     // Create packet within MTU
-    using PacketType = SignalDataPacket<NoClassId, NoTimeStamp, Trailer::None, 64>;
+    using PacketType = SignalDataPacket<NoClassId, NoTimeStamp, Trailer::none, 64>;
     alignas(4) std::array<uint8_t, PacketType::size_bytes> buffer{};
 
     std::array<uint8_t, 256> payload{};
@@ -267,14 +267,14 @@ TEST_F(UDPWriterTest, UnboundModeMultipleDestinations) {
     // Create two readers on different ports
     vrtio::utils::netio::UDPVRTReader<> reader1(test_port);
     vrtio::utils::netio::UDPVRTReader<> reader2(test_port_2);
-    reader1.set_timeout(std::chrono::milliseconds(100));
-    reader2.set_timeout(std::chrono::milliseconds(100));
+    reader1.try_set_timeout(std::chrono::milliseconds(100));
+    reader2.try_set_timeout(std::chrono::milliseconds(100));
 
     // Create unbound writer
     UDPVRTWriter writer(0);
 
     // Create packet
-    using PacketType = SignalDataPacket<NoClassId, NoTimeStamp, Trailer::None, 64>;
+    using PacketType = SignalDataPacket<NoClassId, NoTimeStamp, Trailer::none, 64>;
     alignas(4) std::array<uint8_t, PacketType::size_bytes> buffer{};
 
     auto packet =
@@ -324,7 +324,7 @@ TEST_F(UDPWriterTest, FlushIsNoOp) {
     EXPECT_TRUE(writer.flush());
 
     // Create and send packet
-    using PacketType = SignalDataPacket<NoClassId, NoTimeStamp, Trailer::None, 64>;
+    using PacketType = SignalDataPacket<NoClassId, NoTimeStamp, Trailer::none, 64>;
     alignas(4) std::array<uint8_t, PacketType::size_bytes> buffer{};
 
     auto packet =
@@ -342,12 +342,12 @@ TEST_F(UDPWriterTest, FlushIsNoOp) {
 
 TEST_F(UDPWriterTest, MoveConstructor) {
     vrtio::utils::netio::UDPVRTReader<> reader(test_port);
-    reader.set_timeout(std::chrono::milliseconds(100));
+    reader.try_set_timeout(std::chrono::milliseconds(100));
 
     UDPVRTWriter writer1("127.0.0.1", test_port);
 
     // Send packet with writer1
-    using PacketType = SignalDataPacket<NoClassId, NoTimeStamp, Trailer::None, 64>;
+    using PacketType = SignalDataPacket<NoClassId, NoTimeStamp, Trailer::none, 64>;
     alignas(4) std::array<uint8_t, PacketType::size_bytes> buffer{};
 
     auto packet =
@@ -369,7 +369,7 @@ TEST_F(UDPWriterTest, MoveAssignment) {
     UDPVRTWriter writer1("127.0.0.1", test_port);
     UDPVRTWriter writer2("127.0.0.1", test_port_2);
 
-    using PacketType = SignalDataPacket<NoClassId, NoTimeStamp, Trailer::None, 64>;
+    using PacketType = SignalDataPacket<NoClassId, NoTimeStamp, Trailer::none, 64>;
     alignas(4) std::array<uint8_t, PacketType::size_bytes> buffer{};
 
     auto packet =

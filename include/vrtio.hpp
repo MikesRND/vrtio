@@ -59,10 +59,10 @@ namespace vrtio {
 // Convenient aliases for common packet types
 template <typename ClassIdType, typename TimeStampType, Trailer TrailerType, size_t PayloadWords>
 using SignalDataPacket =
-    DataPacket<PacketType::SignalData, ClassIdType, TimeStampType, TrailerType, PayloadWords>;
+    DataPacket<PacketType::signal_data, ClassIdType, TimeStampType, TrailerType, PayloadWords>;
 
 template <typename ClassIdType, typename TimeStampType, Trailer TrailerType, size_t PayloadWords>
 using ExtensionDataPacket =
-    DataPacket<PacketType::ExtensionData, ClassIdType, TimeStampType, TrailerType, PayloadWords>;
+    DataPacket<PacketType::extension_data, ClassIdType, TimeStampType, TrailerType, PayloadWords>;
 
 } // namespace vrtio

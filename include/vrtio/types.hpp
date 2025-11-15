@@ -7,20 +7,20 @@ namespace vrtio {
 
 // VRT packet types (VITA 49.2 standard)
 enum class PacketType : uint8_t {
-    SignalDataNoId = 0,    // Signal data without stream identifier
-    SignalData = 1,        // Signal data with stream identifier
-    ExtensionDataNoId = 2, // Extension data without stream identifier
-    ExtensionData = 3,     // Extension data with stream identifier
-    Context = 4,           // Context packet
-    ExtensionContext = 5,  // Extension context packet
-    Command = 6,           // Command packet (VITA 49.2)
-    ExtensionCommand = 7   // Extension command packet (VITA 49.2)
+    signal_data_no_id = 0,    // Signal data without stream identifier
+    signal_data = 1,          // Signal data with stream identifier
+    extension_data_no_id = 2, // Extension data without stream identifier
+    extension_data = 3,       // Extension data with stream identifier
+    context = 4,              // Context packet
+    extension_context = 5,    // Extension context packet
+    command = 6,              // Command packet (VITA 49.2)
+    extension_command = 7     // Extension command packet (VITA 49.2)
 };
 
 // Trailer field indicator
 enum class Trailer : uint8_t {
-    None = 0,    // No trailer field
-    Included = 1 // Trailer field present
+    none = 0,    // No trailer field
+    included = 1 // Trailer field present
 };
 
 // Integer timestamp types (TSI field)
@@ -31,6 +31,22 @@ enum class TsiType : uint8_t {
     other = 3 // Other/application-defined
 };
 
+// Convert TsiType to human-readable string
+constexpr const char* tsi_type_string(TsiType type) noexcept {
+    switch (type) {
+        case TsiType::none:
+            return "none";
+        case TsiType::utc:
+            return "utc";
+        case TsiType::gps:
+            return "gps";
+        case TsiType::other:
+            return "other";
+        default:
+            return "unknown";
+    }
+}
+
 // Fractional timestamp types (TSF field)
 enum class TsfType : uint8_t {
     none = 0,         // No fractional timestamp
@@ -38,6 +54,22 @@ enum class TsfType : uint8_t {
     real_time = 2,    // Real-time picosecond timestamp
     free_running = 3  // Free-running count
 };
+
+// Convert TsfType to human-readable string
+constexpr const char* tsf_type_string(TsfType type) noexcept {
+    switch (type) {
+        case TsfType::none:
+            return "none";
+        case TsfType::sample_count:
+            return "sample_count";
+        case TsfType::real_time:
+            return "real_time";
+        case TsfType::free_running:
+            return "free_running";
+        default:
+            return "unknown";
+    }
+}
 
 // TSI resolution constants
 inline constexpr uint32_t tsi_resolution_seconds = 1;
@@ -56,13 +88,37 @@ inline constexpr size_t max_packet_bytes = max_packet_words * vrt_word_size;
 
 // Helper: Check if packet type is signal data
 constexpr bool is_signal_data(PacketType type) noexcept {
-    return type == PacketType::SignalDataNoId || type == PacketType::SignalData;
+    return type == PacketType::signal_data_no_id || type == PacketType::signal_data;
 }
 
 // Helper: Check if packet type includes stream ID
 constexpr bool has_stream_identifier(PacketType type) noexcept {
     uint8_t t = static_cast<uint8_t>(type);
     return (t != 0) && (t != 2) && (t <= 7);
+}
+
+// Convert PacketType to human-readable string
+constexpr const char* packet_type_string(PacketType type) noexcept {
+    switch (type) {
+        case PacketType::signal_data_no_id:
+            return "signal_data_no_id";
+        case PacketType::signal_data:
+            return "signal_data";
+        case PacketType::extension_data_no_id:
+            return "extension_data_no_id";
+        case PacketType::extension_data:
+            return "extension_data";
+        case PacketType::context:
+            return "context";
+        case PacketType::extension_context:
+            return "extension_context";
+        case PacketType::command:
+            return "command";
+        case PacketType::extension_command:
+            return "extension_command";
+        default:
+            return "unknown";
+    }
 }
 
 // Validation error codes for packet parsing
