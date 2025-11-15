@@ -20,7 +20,7 @@ struct UDPTransportStatus {
     /**
      * @brief State of the last UDP receive operation
      */
-    enum State {
+    enum class State : uint8_t {
         /** Packet successfully received and ready for parsing */
         packet_ready,
 
@@ -41,7 +41,7 @@ struct UDPTransportStatus {
     };
 
     /** Current state */
-    State state{packet_ready};
+    State state{State::packet_ready};
 
     /** Number of bytes actually received (may be less than actual_size if truncated) */
     size_t bytes_received{0};
@@ -66,9 +66,9 @@ struct UDPTransportStatus {
     /**
      * Packet type decoded from header
      *
-     * Only valid if bytes_received >= 4, otherwise PacketType::SignalDataNoId.
+     * Only valid if bytes_received >= 4, otherwise PacketType::signal_data_no_id.
      */
-    PacketType packet_type{PacketType::SignalDataNoId};
+    PacketType packet_type{PacketType::signal_data_no_id};
 
     /** Platform errno value for socket_error state */
     int errno_value{0};
@@ -92,5 +92,30 @@ struct UDPTransportStatus {
      */
     bool is_truncated() const noexcept { return state == State::datagram_truncated; }
 };
+
+/**
+ * @brief Convert UDPTransportStatus::State to human-readable string
+ *
+ * @param state The transport state to convert
+ * @return String representation of the state
+ */
+constexpr const char* transport_state_string(UDPTransportStatus::State state) noexcept {
+    switch (state) {
+        case UDPTransportStatus::State::packet_ready:
+            return "packet_ready";
+        case UDPTransportStatus::State::socket_closed:
+            return "socket_closed";
+        case UDPTransportStatus::State::socket_error:
+            return "socket_error";
+        case UDPTransportStatus::State::datagram_truncated:
+            return "datagram_truncated";
+        case UDPTransportStatus::State::timeout:
+            return "timeout";
+        case UDPTransportStatus::State::interrupted:
+            return "interrupted";
+        default:
+            return "unknown";
+    }
+}
 
 } // namespace vrtio::utils::netio

@@ -139,7 +139,7 @@ int main(int argc, char** argv) {
         UDPVRTReader<> reader(port);
 
         // Optional: Set timeout to allow checking keep_running flag
-        reader.set_timeout(std::chrono::seconds(1));
+        reader.try_set_timeout(std::chrono::seconds(1));
 
         // Process packets using visitor pattern
         UDPPacketProcessor processor;

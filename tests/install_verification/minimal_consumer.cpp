@@ -15,7 +15,7 @@ int main() {
 
     // Create a minimal packet to verify headers compile and link correctly
     using MinimalPacket =
-        vrtio::SignalDataPacketNoId<vrtio::NoClassId, vrtio::NoTimeStamp, vrtio::Trailer::None,
+        vrtio::SignalDataPacketNoId<vrtio::NoClassId, vrtio::NoTimeStamp, vrtio::Trailer::none,
                                     64 // 256 bytes payload
                                     >;
 

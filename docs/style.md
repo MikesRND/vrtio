@@ -14,8 +14,11 @@ Items not specified here should generally follow the C++ Core Guidelines
 ### Structure
 - `vrtio` - Main namespace for all public APIs
 - `vrtio::field` - Field tag definitions (kept flat for convenience)
-- `vrtio::utils::fileio` - Optional file I/O utilities (allocates, uses exceptions)
-- `vrtio::detail` - Implementation details (never access directly)
+- `vrtio::utils::fileio` - High-level I/O helpers (allocates, uses exceptions)
+- `vrtio::utils::netio` - UDP transport helpers (may allocate/throw)
+- `vrtio::utils::detail` - Shared iteration helpers (still considered internal)
+- `vrtio::cif`, `vrtio::trailer` - Narrow structs/enums kept separate for clarity
+- `vrtio::detail` - Implementation details (never access directly; anything not listed above should live here)
 
 
 ## Accessor Methods

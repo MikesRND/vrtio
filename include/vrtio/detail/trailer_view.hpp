@@ -24,38 +24,44 @@ public:
         return detail::network_to_host32(value);
     }
 
-    uint8_t context_packets() const noexcept { return trailer::get_context_packets(raw()); }
+    uint8_t context_packets() const noexcept { return trailer::extract_context_packets(raw()); }
 
     bool reference_lock() const noexcept {
-        return trailer::get_bit<trailer::reference_lock_bit>(raw());
+        return trailer::extract_bit<trailer::reference_lock_bit>(raw());
     }
 
-    bool agc_mgc() const noexcept { return trailer::get_bit<trailer::agc_mgc_bit>(raw()); }
+    bool agc_mgc() const noexcept { return trailer::extract_bit<trailer::agc_mgc_bit>(raw()); }
 
     bool detected_signal() const noexcept {
-        return trailer::get_bit<trailer::detected_signal_bit>(raw());
+        return trailer::extract_bit<trailer::detected_signal_bit>(raw());
     }
 
     bool spectral_inversion() const noexcept {
-        return trailer::get_bit<trailer::spectral_inversion_bit>(raw());
+        return trailer::extract_bit<trailer::spectral_inversion_bit>(raw());
     }
 
-    bool over_range() const noexcept { return trailer::get_bit<trailer::over_range_bit>(raw()); }
+    bool over_range() const noexcept {
+        return trailer::extract_bit<trailer::over_range_bit>(raw());
+    }
 
-    bool sample_loss() const noexcept { return trailer::get_bit<trailer::sample_loss_bit>(raw()); }
+    bool sample_loss() const noexcept {
+        return trailer::extract_bit<trailer::sample_loss_bit>(raw());
+    }
 
     bool calibrated_time() const noexcept {
-        return trailer::get_bit<trailer::calibrated_time_bit>(raw());
+        return trailer::extract_bit<trailer::calibrated_time_bit>(raw());
     }
 
-    bool valid_data() const noexcept { return trailer::get_bit<trailer::valid_data_bit>(raw()); }
+    bool valid_data() const noexcept {
+        return trailer::extract_bit<trailer::valid_data_bit>(raw());
+    }
 
     bool reference_point() const noexcept {
-        return trailer::get_bit<trailer::reference_point_bit>(raw());
+        return trailer::extract_bit<trailer::reference_point_bit>(raw());
     }
 
     bool signal_detected() const noexcept {
-        return trailer::get_bit<trailer::signal_detected_bit>(raw());
+        return trailer::extract_bit<trailer::signal_detected_bit>(raw());
     }
 
     bool has_errors() const noexcept { return trailer::has_errors(raw()); }

@@ -71,13 +71,13 @@ inline constexpr uint32_t status_errors = over_range_mask | sample_loss_mask;
 // Helper functions for bit manipulation
 
 /**
- * Get a single bit value from a trailer word
+ * Extract a single bit value from a trailer word
  * @tparam Bit The bit position (0-31)
  * @param value The trailer word value
  * @return true if bit is set, false otherwise
  */
 template <uint32_t Bit>
-constexpr bool get_bit(uint32_t value) noexcept {
+constexpr bool extract_bit(uint32_t value) noexcept {
     static_assert(Bit < 32, "Bit position must be less than 32");
     return (value >> Bit) & 0x01;
 }
@@ -96,14 +96,14 @@ constexpr uint32_t set_bit(uint32_t value, bool bit_value) noexcept {
 }
 
 /**
- * Get a multi-bit field from a trailer word
+ * Extract a multi-bit field from a trailer word
  * @tparam Shift The starting bit position
  * @tparam Mask The bit mask (after shifting)
  * @param value The trailer word value
  * @return The extracted field value
  */
 template <uint32_t Shift, uint32_t Mask>
-constexpr uint32_t get_field(uint32_t value) noexcept {
+constexpr uint32_t extract_field(uint32_t value) noexcept {
     return (value >> Shift) & Mask;
 }
 
@@ -126,14 +126,14 @@ constexpr uint32_t set_field(uint32_t value, uint32_t field_value) noexcept {
  * Check if the trailer indicates valid data
  */
 inline constexpr bool is_valid_data(uint32_t trailer) noexcept {
-    return get_bit<valid_data_bit>(trailer);
+    return extract_bit<valid_data_bit>(trailer);
 }
 
 /**
  * Check if the trailer indicates calibrated time
  */
 inline constexpr bool is_calibrated_time(uint32_t trailer) noexcept {
-    return get_bit<calibrated_time_bit>(trailer);
+    return extract_bit<calibrated_time_bit>(trailer);
 }
 
 /**
@@ -144,10 +144,11 @@ inline constexpr bool has_errors(uint32_t trailer) noexcept {
 }
 
 /**
- * Get the associated context packets count
+ * Extract the associated context packets count
  */
-inline constexpr uint8_t get_context_packets(uint32_t trailer) noexcept {
-    return static_cast<uint8_t>(get_field<context_packets_shift, context_packets_mask>(trailer));
+inline constexpr uint8_t extract_context_packets(uint32_t trailer) noexcept {
+    return static_cast<uint8_t>(
+        extract_field<context_packets_shift, context_packets_mask>(trailer));
 }
 
 /**

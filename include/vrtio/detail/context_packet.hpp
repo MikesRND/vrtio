@@ -35,7 +35,7 @@ class ContextPacketBase {
 private:
     uint8_t* buffer_;
     // Use Prologue for common header fields (IsContext = true for always-present stream ID)
-    using prologue_type = Prologue<PacketType::Context, ClassIdType, TimeStampType, true>;
+    using prologue_type = Prologue<PacketType::context, ClassIdType, TimeStampType, true>;
     mutable prologue_type prologue_;
 
     // Expose necessary constants
@@ -149,10 +149,12 @@ public:
     }
 
     // Buffer access
-    std::span<uint8_t> as_bytes() noexcept { return std::span<uint8_t>(buffer_, size_bytes); }
+    std::span<uint8_t, size_bytes> as_bytes() noexcept {
+        return std::span<uint8_t, size_bytes>(buffer_, size_bytes);
+    }
 
-    std::span<const uint8_t> as_bytes() const noexcept {
-        return std::span<const uint8_t>(buffer_, size_bytes);
+    std::span<const uint8_t, size_bytes> as_bytes() const noexcept {
+        return std::span<const uint8_t, size_bytes>(buffer_, size_bytes);
     }
 
 private:
@@ -241,13 +243,13 @@ public:
     template <uint8_t CifWord, uint8_t Bit>
     auto operator[](field::field_tag_t<CifWord, Bit> tag) noexcept
         -> FieldProxy<field::field_tag_t<CifWord, Bit>, ContextPacketBase> {
-        return detail::get_impl(*this, tag);
+        return detail::make_field_proxy(*this, tag);
     }
 
     template <uint8_t CifWord, uint8_t Bit>
     auto operator[](field::field_tag_t<CifWord, Bit> tag) const noexcept
         -> FieldProxy<field::field_tag_t<CifWord, Bit>, const ContextPacketBase> {
-        return detail::get_impl(*this, tag);
+        return detail::make_field_proxy(*this, tag);
     }
 
     // Internal implementation details - DO NOT USE DIRECTLY
@@ -273,7 +275,7 @@ public:
         auto decoded = detail::decode_header(header);
 
         // Check packet type (must be context: 4 or 5)
-        if (decoded.type != PacketType::Context && decoded.type != PacketType::ExtensionContext) {
+        if (decoded.type != PacketType::context && decoded.type != PacketType::extension_context) {
             return ValidationError::packet_type_mismatch;
         }
 

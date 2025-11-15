@@ -99,7 +99,7 @@ private:
         structure_.packet_size_words = decoded.size_words;
 
         // 3. Validate packet type (must be context: 4 or 5)
-        if (decoded.type != PacketType::Context && decoded.type != PacketType::ExtensionContext) {
+        if (decoded.type != PacketType::context && decoded.type != PacketType::extension_context) {
             return ValidationError::invalid_packet_type;
         }
 
@@ -381,7 +381,7 @@ public:
     template <uint8_t CifWord, uint8_t Bit>
     auto operator[](field::field_tag_t<CifWord, Bit> tag) const noexcept
         -> FieldProxy<field::field_tag_t<CifWord, Bit>, const ContextPacketView> {
-        return detail::get_impl(*this, tag);
+        return detail::make_field_proxy(*this, tag);
     }
 };
 

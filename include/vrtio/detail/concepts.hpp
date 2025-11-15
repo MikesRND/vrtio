@@ -42,7 +42,7 @@ concept ValidPayloadWords = (N <= 65529); // 65535 - 6
 template <auto Type>
 concept DataPacketType =
     std::same_as<decltype(Type), const PacketType> &&
-    (Type == PacketType::SignalDataNoId || Type == PacketType::SignalData ||
-     Type == PacketType::ExtensionDataNoId || Type == PacketType::ExtensionData);
+    (Type == PacketType::signal_data_no_id || Type == PacketType::signal_data ||
+     Type == PacketType::extension_data_no_id || Type == PacketType::extension_data);
 
 } // namespace vrtio

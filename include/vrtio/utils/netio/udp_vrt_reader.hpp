@@ -231,13 +231,13 @@ public:
                 // Truncated with no header - return generic InvalidPacket
                 // Use dummy header with packet size from actual_size
                 vrtio::detail::DecodedHeader dummy{};
-                dummy.type = PacketType::SignalDataNoId;
+                dummy.type = PacketType::signal_data_no_id;
                 dummy.size_words =
                     static_cast<uint16_t>(std::min(status_.actual_size / 4, size_t(65535)));
                 dummy.has_class_id = false;
                 dummy.trailer_included = false;
                 return fileio::PacketVariant{fileio::InvalidPacket{
-                    ValidationError::buffer_too_small, PacketType::SignalDataNoId, dummy,
+                    ValidationError::buffer_too_small, PacketType::signal_data_no_id, dummy,
                     std::span<const uint8_t>()}};
             }
 
@@ -249,13 +249,13 @@ public:
         if (bytes.size() < 4) {
             // Malformed datagram - return InvalidPacket so iteration continues
             vrtio::detail::DecodedHeader dummy{};
-            dummy.type = PacketType::SignalDataNoId;
+            dummy.type = PacketType::signal_data_no_id;
             dummy.size_words = static_cast<uint16_t>(bytes.size() / 4);
             dummy.has_class_id = false;
             dummy.trailer_included = false;
-            return fileio::PacketVariant{
-                fileio::InvalidPacket{ValidationError::buffer_too_small, PacketType::SignalDataNoId,
-                                      dummy, std::span<const uint8_t>(bytes.data(), bytes.size())}};
+            return fileio::PacketVariant{fileio::InvalidPacket{
+                ValidationError::buffer_too_small, PacketType::signal_data_no_id, dummy,
+                std::span<const uint8_t>(bytes.data(), bytes.size())}};
         }
 
         // Parse and validate the packet
@@ -349,7 +349,7 @@ public:
      * @param timeout Timeout duration (zero = no timeout, infinite blocking)
      * @return true on success, false on failure
      */
-    bool set_timeout(std::chrono::milliseconds timeout) noexcept {
+    bool try_set_timeout(std::chrono::milliseconds timeout) noexcept {
         struct timeval tv {};
         tv.tv_sec = timeout.count() / 1000;
         tv.tv_usec = (timeout.count() % 1000) * 1000;
@@ -366,7 +366,7 @@ public:
      * @param bytes Requested buffer size in bytes
      * @return true on success, false on failure
      */
-    bool set_receive_buffer_size(size_t bytes) noexcept {
+    bool try_set_receive_buffer_size(size_t bytes) noexcept {
         int size = static_cast<int>(bytes);
         return setsockopt(socket_, SOL_SOCKET, SO_RCVBUF, &size, sizeof(size)) >= 0;
     }
@@ -417,7 +417,7 @@ private:
     std::span<const uint8_t> read_next_datagram() noexcept {
         // Clear previous state
         status_.header = 0;
-        status_.packet_type = PacketType::SignalDataNoId;
+        status_.packet_type = PacketType::signal_data_no_id;
         status_.bytes_received = 0;
         status_.actual_size = 0;
         status_.errno_value = 0;

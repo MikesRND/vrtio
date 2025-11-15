@@ -72,7 +72,7 @@ namespace vrtio::utils::netio {
  *
  * // Create packet
  * using PacketType = vrtio::SignalDataPacket<vrtio::NoClassId, vrtio::NoTimeStamp,
- * vrtio::Trailer::None, 64>; alignas(4) std::array<uint8_t, PacketType::size_bytes> buffer{}; auto
+ * vrtio::Trailer::none, 64>; alignas(4) std::array<uint8_t, PacketType::size_bytes> buffer{}; auto
  * packet = vrtio::PacketBuilder<PacketType>(buffer.data()) .stream_id(0x1234) .packet_count(1)
  *     .build();
  *

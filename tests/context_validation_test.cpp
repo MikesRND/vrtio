@@ -3,7 +3,7 @@
 TEST_F(ContextPacketTest, RejectUnsupportedFields) {
     // Try to create packet with unsupported CIF0 bit 7 (Field Attributes)
     // Type 4 (context) has stream ID, so structure: header + stream_id + CIF0 = 3 words
-    uint32_t header = (static_cast<uint32_t>(PacketType::Context) << header::packet_type_shift) | 3;
+    uint32_t header = (static_cast<uint32_t>(PacketType::context) << header::packet_type_shift) | 3;
     cif::write_u32_safe(buffer.data(), 0, header);
 
     // Stream ID (type 4 has stream ID per VITA 49.2)
@@ -19,7 +19,7 @@ TEST_F(ContextPacketTest, RejectUnsupportedFields) {
 
 TEST_F(ContextPacketTest, RejectReservedBits) {
     // Type 4 (context) has stream ID, so structure: header + stream_id + CIF0 = 3 words
-    uint32_t header = (static_cast<uint32_t>(PacketType::Context) << header::packet_type_shift) |
+    uint32_t header = (static_cast<uint32_t>(PacketType::context) << header::packet_type_shift) |
                       3; // type=4, size=3 words
     cif::write_u32_safe(buffer.data(), 0, header);
 
@@ -37,7 +37,7 @@ TEST_F(ContextPacketTest, RejectReservedBits) {
 TEST_F(ContextPacketTest, RejectReservedCIF1Bits) {
     // Create packet with CIF1 enabled but reserved bit set
     // Type 4 has stream ID: header(1) + stream_id(1) + CIF0(1) + CIF1(1) = 4 words
-    uint32_t header = (static_cast<uint32_t>(PacketType::Context) << header::packet_type_shift) | 4;
+    uint32_t header = (static_cast<uint32_t>(PacketType::context) << header::packet_type_shift) | 4;
     cif::write_u32_safe(buffer.data(), 0, header);
 
     // Stream ID (type 4 has stream ID per VITA 49.2)
@@ -58,7 +58,7 @@ TEST_F(ContextPacketTest, RejectReservedCIF1Bits) {
 TEST_F(ContextPacketTest, RejectReservedCIF2Bits) {
     // Create packet with CIF2 enabled but reserved bit set
     // Type 4 has stream ID: header(1) + stream_id(1) + CIF0(1) + CIF2(1) = 4 words
-    uint32_t header = (static_cast<uint32_t>(PacketType::Context) << header::packet_type_shift) | 4;
+    uint32_t header = (static_cast<uint32_t>(PacketType::context) << header::packet_type_shift) | 4;
     cif::write_u32_safe(buffer.data(), 0, header);
 
     // Stream ID (type 4 has stream ID per VITA 49.2)

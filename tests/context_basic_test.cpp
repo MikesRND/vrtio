@@ -58,7 +58,7 @@ TEST_F(ContextPacketTest, RuntimeParserBasic) {
     // Header: extension context packet (type 5), which has stream ID per spec
     // Stream ID presence is determined by packet type (odd=has, even=no), not bit 25
     uint32_t header =
-        (static_cast<uint32_t>(PacketType::ExtensionContext) << header::packet_type_shift) | 7;
+        (static_cast<uint32_t>(PacketType::extension_context) << header::packet_type_shift) | 7;
     cif::write_u32_safe(buffer.data(), 0, header);
 
     // Stream ID
@@ -102,7 +102,7 @@ TEST_F(ContextPacketTest, SizeFieldValidation) {
     // Create packet with wrong size field in header
     // Actual structure: header (1) + stream_id (1) + CIF0 (1) + bandwidth (2) = 5 words
     // But header claims 10 words (mismatch!)
-    uint32_t header = (static_cast<uint32_t>(PacketType::Context) << header::packet_type_shift) |
+    uint32_t header = (static_cast<uint32_t>(PacketType::context) << header::packet_type_shift) |
                       10; // type=4, WRONG size=10 words
     cif::write_u32_safe(buffer.data(), 0, header);
 
@@ -119,7 +119,7 @@ TEST_F(ContextPacketTest, SizeFieldValidation) {
 }
 
 TEST_F(ContextPacketTest, BufferTooSmall) {
-    uint32_t header = (static_cast<uint32_t>(PacketType::Context) << header::packet_type_shift) |
+    uint32_t header = (static_cast<uint32_t>(PacketType::context) << header::packet_type_shift) |
                       10; // type=4, size=10 words
     cif::write_u32_safe(buffer.data(), 0, header);
 

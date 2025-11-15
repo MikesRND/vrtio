@@ -284,7 +284,7 @@ TEST(EnhancedReaderTest, InvalidPacketHasErrorInfo) {
     // This test just verifies the InvalidPacket structure works
 
     vrtio::detail::DecodedHeader header{};
-    fileio::InvalidPacket invalid{ValidationError::buffer_too_small, PacketType::SignalDataNoId,
+    fileio::InvalidPacket invalid{ValidationError::buffer_too_small, PacketType::signal_data_no_id,
                                   header, std::span<const uint8_t>{}};
 
     EXPECT_EQ(invalid.error, ValidationError::buffer_too_small);

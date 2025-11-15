@@ -5,7 +5,7 @@ using namespace vrtio::field;
 TEST_F(ContextPacketTest, GPSASCIIVariableField) {
     // Manually create packet with GPS ASCII field
     // Type 4 has stream ID: header (1) + stream_id (1) + CIF0 (1) + GPS ASCII (4) = 7 words
-    uint32_t header = (static_cast<uint32_t>(PacketType::Context) << header::packet_type_shift) |
+    uint32_t header = (static_cast<uint32_t>(PacketType::context) << header::packet_type_shift) |
                       7; // type=4, size=7 words
     cif::write_u32_safe(buffer.data(), 0, header);
 
@@ -45,7 +45,7 @@ TEST_F(ContextPacketTest, GPSASCIIVariableField) {
 
 TEST_F(ContextPacketTest, ContextAssociationLists) {
     // Type 4 has stream ID: header (1) + stream_id (1) + CIF0 (1) + context_assoc (4) = 7 words
-    uint32_t header = (static_cast<uint32_t>(PacketType::Context) << header::packet_type_shift) |
+    uint32_t header = (static_cast<uint32_t>(PacketType::context) << header::packet_type_shift) |
                       7; // type=4, size=7 words
     cif::write_u32_safe(buffer.data(), 0, header);
 
