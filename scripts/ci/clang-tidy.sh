@@ -63,7 +63,8 @@ if [ ! -f "$BUILD_DIR/compile_commands.json" ]; then
         -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
         -DCMAKE_CXX_STANDARD=20 \
         -DVRTIO_BUILD_TESTS=ON \
-        -DVRTIO_BUILD_EXAMPLES=ON
+        -DVRTIO_BUILD_EXAMPLES=ON \
+        -DVRTIO_FETCH_DEPENDENCIES=ON
     echo ""
 fi
 
