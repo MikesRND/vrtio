@@ -62,7 +62,6 @@ install-test/
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
-*.cmake
 !CMakeLists.txt
 
 # CTest

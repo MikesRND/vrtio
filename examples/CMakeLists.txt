@@ -1,40 +1,16 @@
 # Examples for VRTIO
 
-# Basic usage example
-add_executable(basic_usage basic_usage.cpp)
-target_link_libraries(basic_usage PRIVATE vrtio)
+include(${CMAKE_SOURCE_DIR}/cmake/VrtioBuild.cmake)
 
-# Trailer fields example
-add_executable(trailer_example trailer_example.cpp)
-target_link_libraries(trailer_example PRIVATE vrtio)
-
-# Timestamp example
-add_executable(timestamp_example timestamp_example.cpp)
-target_link_libraries(timestamp_example PRIVATE vrtio)
-
-# Context packet example
-add_executable(context_example context_example.cpp)
-target_link_libraries(context_example PRIVATE vrtio)
-
-# File parsing example
-add_executable(file_parsing_example file_parsing_example.cpp)
-target_link_libraries(file_parsing_example PRIVATE vrtio)
+vrtio_add_example(basic_usage basic_usage.cpp)
+vrtio_add_example(trailer_example trailer_example.cpp)
+vrtio_add_example(timestamp_example timestamp_example.cpp)
+vrtio_add_example(context_example context_example.cpp)
+vrtio_add_example(file_parsing_example file_parsing_example.cpp)
 
 # UDP reader example (Linux/POSIX only)
 if(UNIX)
-    add_executable(udp_reader_example udp_reader_example.cpp)
-    target_link_libraries(udp_reader_example PRIVATE vrtio)
-    set_target_properties(basic_usage trailer_example timestamp_example context_example file_parsing_example udp_reader_example PROPERTIES
-        CXX_STANDARD 20
-        CXX_STANDARD_REQUIRED ON
-        CXX_EXTENSIONS OFF
-    )
-else()
-    set_target_properties(basic_usage trailer_example timestamp_example context_example file_parsing_example PROPERTIES
-        CXX_STANDARD 20
-        CXX_STANDARD_REQUIRED ON
-        CXX_EXTENSIONS OFF
-    )
+    vrtio_add_example(udp_reader_example udp_reader_example.cpp)
 endif()
 
 # Add custom targets to run examples

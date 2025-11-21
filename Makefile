@@ -1,19 +1,19 @@
 # VRTIO Makefile - Convenience wrapper for CMake
 
-.PHONY: all build clean configure debug release examples help check
-.PHONY: test run list-tests list-examples format install uninstall quickstart
-.PHONY: quick-check ci-coverage ci-debug ci-clang ci-install-verify ci-local ci-full clean-all rebuild
-.PHONY: format-check format-fix format-diff tidy tidy-fix ci-format ci-tidy
+.PHONY: all clean configure debug release examples help check
+.PHONY: test run install uninstall quickstart
+.PHONY: quick-check coverage debug-build clang-build install-verify ci-full clean-all
+.PHONY: format-check format-fix format-diff clang-tidy clang-tidy-fix
 
 # Default build directory
 BUILD_DIR ?= build
 BUILD_TYPE ?= Debug
+VRTIO_BUILD_TESTS ?= ON
+VRTIO_BUILD_EXAMPLES ?= ON
+VRTIO_FETCH_DEPENDENCIES ?= ON
 
 # Parallel build jobs
 NPROC := $(shell nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
-
-# Default target (GNU standard)
-all: build
 
 # ============================================================================
 # Configuration Targets
@@ -24,7 +24,10 @@ configure:
 	@mkdir -p $(BUILD_DIR)
 	@cd $(BUILD_DIR) && cmake .. \
 		-DCMAKE_BUILD_TYPE=$(BUILD_TYPE) \
-		-DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+		-DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+		-DVRTIO_BUILD_TESTS=$(VRTIO_BUILD_TESTS) \
+		-DVRTIO_BUILD_EXAMPLES=$(VRTIO_BUILD_EXAMPLES) \
+		-DVRTIO_FETCH_DEPENDENCIES=$(VRTIO_FETCH_DEPENDENCIES)
 
 # Debug build (default)
 debug:
@@ -38,8 +41,8 @@ release:
 # Build Targets
 # ============================================================================
 
-# Build with current configuration
-build: configure
+# Default target - build everything (GNU standard)
+all: configure
 	@cmake --build $(BUILD_DIR) -j$(NPROC)
 
 # Build only examples
@@ -49,9 +52,6 @@ examples: configure
 # Extract quickstart documentation
 quickstart: configure
 	@cmake --build $(BUILD_DIR) --target quickstart
-
-# Quick rebuild
-rebuild: clean build
 
 # Clean build artifacts
 clean:
@@ -73,7 +73,7 @@ test: configure
 # ============================================================================
 
 # Run all examples
-run: build
+run: all
 	@echo "Running all examples..."
 	@echo "\n=== Basic Usage ==="
 	@./$(BUILD_DIR)/examples/basic_usage
@@ -99,22 +99,17 @@ check: test
 # CI Validation Targets
 # ============================================================================
 
-# Local CI validation (essential checks - no coverage)
-# Note: Some checks may be skipped if optional dependencies are missing
-ci-local:
-	@echo "Running essential CI checks locally..."
-	@$(MAKE) quick-check
-	@$(MAKE) ci-debug
-	@$(MAKE) ci-clang
-	@echo "\n✓ Local CI validation complete"
-
-# Full CI validation (includes coverage + install verify)
+# Full CI validation - runs all CI checks locally
 # Note: Some checks may be skipped if optional dependencies are missing
 ci-full:
 	@echo "Running full CI validation..."
-	@$(MAKE) ci-local
-	@$(MAKE) ci-install-verify
-	@$(MAKE) ci-coverage
+	@$(MAKE) format-check
+	@$(MAKE) quick-check
+	@$(MAKE) debug-build
+	@$(MAKE) clang-build
+	@$(MAKE) clang-tidy
+	@$(MAKE) install-verify
+	@$(MAKE) coverage
 	@echo "\n✓ Full CI validation complete - safe to push!"
 
 # Quick validation - matches CI quick-check job (required gate)
@@ -124,19 +119,19 @@ quick-check:
 
 # Code coverage report - matches CI coverage job
 # Generates HTML report in build-coverage/coverage_html/index.html
-ci-coverage:
+coverage:
 	@./scripts/ci/coverage.sh build-coverage
 
 # Debug build check - matches CI debug-build job
-ci-debug:
+debug-build:
 	@./scripts/ci/debug-build.sh build-debug
 
 # Clang build check - matches CI clang-build job
-ci-clang:
+clang-build:
 	@./scripts/ci/clang-build.sh build-clang
 
 # Install verification - matches CI install-verification job
-ci-install-verify:
+install-verify:
 	@./scripts/ci/install-verify.sh build-install
 
 # Clean all build directories (including CI build dirs)
@@ -149,37 +144,8 @@ clean-all:
 # Utility Targets
 # ============================================================================
 
-# List all available tests
-list-tests:
-	@echo "Available tests:"
-	@echo "    - test-roundtrip      (roundtrip_test)"
-	@echo "    - test-endian         (endian_test)"
-	@echo "    - test-builder        (builder_test)"
-	@echo "    - test-security       (security_test)"
-	@echo "    - test-trailer        (trailer_test)"
-	@echo "    - test-timestamp      (timestamp_test)"
-	@echo "    - test-context        (context_test)"
-	@echo "    - test-field-access   (field_access_test)"
-	@echo "    - test-header-decode  (header_decode_test)"
-	@echo "    - test-file-reader    (file_reader_test)"
-	@echo ""
-	@echo "Aggregate target:"
-	@echo "    - test                Run all tests"
-
-# List all available examples
-list-examples:
-	@echo "Available examples:"
-	@echo "    - run-basic-usage        (basic_usage)"
-	@echo "    - run-trailer-example    (trailer_example)"
-	@echo "    - run-timestamp-example  (timestamp_example)"
-	@echo "    - run-context-example    (context_example)"
-	@echo "    - run-file-parsing       (file_parsing_example)"
-	@echo ""
-	@echo "Aggregate target:"
-	@echo "    - run                 Run all examples"
-
 # Install (requires sudo for system-wide)
-install: build
+install: all
 	@cmake --install $(BUILD_DIR)
 
 # Uninstall (requires sudo for system-wide)
@@ -217,23 +183,15 @@ format-diff:
 		fi; \
 	done
 
-# Legacy alias for format-fix
-format: format-fix
 
 # Run clang-tidy static analysis
-tidy:
+clang-tidy:
 	@./scripts/ci/clang-tidy.sh build
 
 # Run clang-tidy with auto-fix (use with caution!)
-tidy-fix:
+clang-tidy-fix:
 	@echo "Running clang-tidy with auto-fix (this may modify your code)..."
 	@./scripts/ci/clang-tidy.sh build --fix
-
-# CI format check (matches CI job)
-ci-format: format-check
-
-# CI static analysis check (matches CI job)
-ci-tidy: tidy
 
 # ============================================================================
 # Help Target
@@ -248,34 +206,36 @@ help:
 	@echo "COMMON TARGETS"
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	@echo "  make / make all       Build everything (tests + examples)"
-	@echo "  make build            Same as 'all' (explicit alias)"
-	@echo "  make test             Run all tests (21 tests)"
-	@echo "  make check            Same as 'test' (GNU standard)"
-	@echo "  make run              Run all examples (5 examples)"
+	@echo "  make test             Run all tests"
 	@echo "  make examples         Build examples only"
 	@echo "  make quickstart       Extract quickstart docs to docs/quickstart.md"
 	@echo ""
 	@echo "  make clean            Remove build directory"
-	@echo "  make rebuild          Clean + build"
-	@echo "  make clean-all        Remove all build dirs (including CI)"
+	@echo "  make clean-all        Remove all build dirs"
 	@echo ""
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	@echo "CI VALIDATION"
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-	@echo "  make quick-check      Fast validation (required CI gate)"
-	@echo "  make ci-local         Essential checks (quick + debug + clang)"
-	@echo "  make ci-full          Full validation (local + install + coverage)"
+	@echo "  make ci-full          Run all CI checks locally"
 	@echo ""
-	@echo "  Individual checks (see scripts/ci/*.sh):"
-	@echo "    make ci-debug            Debug build (catch assertions)"
-	@echo "    make ci-clang            Clang compiler test"
-	@echo "    make ci-install-verify   Install/package verification"
-	@echo "    make ci-coverage         Generate coverage report"
+	@echo "  Code Quality:"
+	@echo "    make format-check        Check code formatting"
+	@echo "    make format-fix          Auto-fix code formatting"
+	@echo "    make format-diff         Show formatting differences"
+	@echo "    make clang-tidy          Run static analysis"
+	@echo "    make clang-tidy-fix      Auto-fix static analysis issues"
+	@echo "    make coverage            Generate coverage report"
+	@echo ""
+	@echo "  Other CI targets:"
+	@echo "    make quick-check         Fast validation (Release build)"
+	@echo "    make debug-build         Debug build (catch assertions)"
+	@echo "    make clang-build         Clang compiler test"
+	@echo "    make install-verify      Install/package verification"
 	@echo ""
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	@echo "ADVANCED"
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-	@echo "  Build modes:"
+	@echo "  Persistent Build modes:"
 	@echo "    make debug               Configure debug build (default)"
 	@echo "    make release             Configure release build"
 	@echo ""
@@ -283,38 +243,4 @@ help:
 	@echo "    make install             Install library system-wide"
 	@echo "    make uninstall           Uninstall from system"
 	@echo ""
-	@echo "  Code Quality:"
-	@echo "    make format-check        Check code formatting (CI-friendly)"
-	@echo "    make format-fix          Auto-fix code formatting"
-	@echo "    make format-diff         Show formatting differences"
-	@echo "    make tidy                Run clang-tidy static analysis"
-	@echo "    make ci-format           Format check (matches CI)"
-	@echo "    make ci-tidy             Static analysis (matches CI)"
-	@echo ""
-	@echo "  Utilities:"
-	@echo "    make list-tests          List all test targets"
-	@echo "    make list-examples       List all example targets"
-	@echo ""
-	@echo "  Run individual tests/examples:"
-	@echo "    ctest -R <pattern>       Run tests matching pattern"
-	@echo "    ./build/tests/<name>     Run specific test directly"
-	@echo "    ./build/examples/<name>  Run specific example directly"
-	@echo ""
-	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-	@echo "CONFIGURATION & EXAMPLES"
-	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-	@echo "  Variables:"
-	@echo "    BUILD_DIR=<dir>          Build directory (default: build)"
-	@echo "    BUILD_TYPE=<type>        Debug|Release (default: Debug)"
-	@echo ""
-	@echo "  Common workflows:"
-	@echo "    make                     # Quick build"
-	@echo "    make test                # Build + test"
-	@echo "    make quick-check         # Before git push"
-	@echo "    make ci-local            # Before important PR"
-	@echo "    make ci-full             # Before release"
-	@echo ""
-	@echo "    BUILD_TYPE=Release make  # Release build"
-	@echo ""
-	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	@echo ""
